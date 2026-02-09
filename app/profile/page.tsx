@@ -1,0 +1,277 @@
+"use client";
+
+import Link from "next/link";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+
+// Define Interfaces
+interface Scheme {
+    id: number;
+    name: string;
+    category?: string;
+    status?: string;
+    date?: string;
+    amount?: string;
+}
+
+interface UserProfile {
+    name: string;
+    email: string;
+    mobile: string;
+    dob: string;
+    gender: string;
+    category: string;
+    income: string;
+    occupation: string;
+    role: string;
+    location: string;
+    aadhar: string;
+    pan: string;
+    fatherName: string;
+    fatherProfession: string;
+    motherName: string;
+    motherProfession: string;
+    documents: string[];
+    appliedSchemes: Scheme[];
+    savedSchemes: Scheme[];
+}
+
+export default function ProfilePage() {
+    const router = useRouter();
+    const [activeTab, setActiveTab] = useState("applied");
+    const [isLoading, setIsLoading] = useState(true);
+
+    // Default Initial State
+    const [user, setUser] = useState<UserProfile>({
+        name: "",
+        email: "",
+        mobile: "",
+        dob: "",
+        gender: "",
+        category: "",
+        income: "",
+        occupation: "",
+        role: "",
+        location: "",
+        aadhar: "",
+        pan: "",
+        fatherName: "",
+        fatherProfession: "",
+        motherName: "",
+        motherProfession: "",
+        documents: [],
+        appliedSchemes: [],
+        savedSchemes: []
+    });
+
+    // Load from LocalStorage on Mount
+    useEffect(() => {
+        const storedUser = localStorage.getItem("userProfile");
+        if (storedUser) {
+            setUser(JSON.parse(storedUser));
+            setIsLoading(false);
+        } else {
+            // If no profile, interactively redirect
+            router.push("/profile/setup");
+        }
+    }, [router]);
+
+    if (isLoading) return <div className="min-h-screen pt-32 flex justify-center text-blue-600 font-bold items-center bg-gray-50">Loading profile...</div>;
+
+    return (
+        <main className="min-h-screen pb-20 bg-gray-50">
+
+            {/* 1. Hero / Header Section */}
+            <div className="relative bg-[#0F172A] pb-24 pt-32 overflow-hidden">
+                {/* Modern Grid Background */}
+                <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-20"></div>
+
+                {/* Glow Effects */}
+                <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[100px] opacity-60 mix-blend-screen animate-pulse"></div>
+
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 py-8 md:py-12">
+                    <div className="flex flex-col md:flex-row items-center md:items-start gap-8 animate-fade-in-up">
+                        {/* Avatar */}
+                        <div className="relative">
+                            <div className="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-white/10 bg-white/5 backdrop-blur-md shadow-2xl flex items-center justify-center text-6xl overflow-hidden ring-1 ring-white/20">
+                                {user.gender === "Female" ? "👩🏽" : "🧔🏽‍♂️"}
+                            </div>
+                            <Link href="/profile/setup" className="absolute bottom-2 right-2 bg-blue-600/80 backdrop-blur text-white p-2.5 rounded-full shadow-lg hover:bg-blue-500 transition-all border border-blue-400/50" title="Edit Profile">
+                                ✏️
+                            </Link>
+                        </div>
+
+                        {/* Main Info */}
+                        <div className="text-center md:text-left flex-1">
+                            <div className="flex flex-col md:flex-row md:items-center gap-3 mb-2">
+                                <h1 className="text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white via-blue-100 to-indigo-200">{user.name}</h1>
+                                <span className="bg-blue-500/10 text-blue-300 font-bold px-3 py-1 rounded-full text-xs uppercase tracking-wide border border-blue-400/20 self-center md:self-auto backdrop-blur-sm">
+                                    {user.occupation || "Beneficiary"}
+                                </span>
+                            </div>
+
+                            <p className="text-slate-400 font-medium mb-6 flex items-center justify-center md:justify-start gap-2">
+                                <span>📍 {user.location || "Location Not Set"}</span>
+                                <span>•</span>
+                                <span>🎂 {user.dob ? `${new Date().getFullYear() - new Date(user.dob).getFullYear()} Years Old` : "Age Not Set"}</span>
+                            </p>
+
+                            <div className="flex flex-wrap gap-4 justify-center md:justify-start">
+                                <div className="bg-white/5 backdrop-blur-sm px-5 py-2.5 rounded-xl border border-white/10 text-sm hover:bg-white/10 transition-colors">
+                                    <span className="block text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-0.5">Annual Income</span>
+                                    <span className="font-bold text-white text-lg">₹{user.income || "N/A"}</span>
+                                </div>
+                                <div className="bg-white/5 backdrop-blur-sm px-5 py-2.5 rounded-xl border border-white/10 text-sm hover:bg-white/10 transition-colors">
+                                    <span className="block text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-0.5">Social Category</span>
+                                    <span className="font-bold text-white text-lg">{user.category || "General"}</span>
+                                </div>
+                                <div className="bg-white/5 backdrop-blur-sm px-5 py-2.5 rounded-xl border border-white/10 text-sm hover:bg-white/10 transition-colors">
+                                    <span className="block text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-0.5">Verifier ID</span>
+                                    <span className="font-bold text-emerald-400 text-lg flex items-center gap-1">
+                                        {user.aadhar ? `XXXX-${user.aadhar.slice(-4)}` : "Unverified"}
+                                        {user.aadhar && <span className="text-[10px] bg-emerald-500/20 px-1.5 py-0.5 rounded text-emerald-300 ml-1">✓</span>}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* 2. Detailed Info Grid */}
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in-up animate-delay-100">
+                <h2 className="text-xl font-bold text-gray-900 mb-6">Personal & Family Details</h2>
+                <div className="grid md:grid-cols-3 gap-6">
+
+                    {/* Card 1: Contact Info */}
+                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                        <h3 className="font-bold text-gray-400 text-xs uppercase tracking-wider mb-4 border-b border-gray-100 pb-2">Contact Information</h3>
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-xl">📞</div>
+                                <div>
+                                    <div className="text-sm text-gray-500">Mobile Number</div>
+                                    <div className="font-bold text-gray-900">{user.mobile || "--"}</div>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-xl">📧</div>
+                                <div>
+                                    <div className="text-sm text-gray-500">Email Address</div>
+                                    <div className="font-bold text-gray-900 break-all">{user.email || "--"}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Card 2: Family Info */}
+                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                        <h3 className="font-bold text-gray-400 text-xs uppercase tracking-wider mb-4 border-b border-gray-100 pb-2">Family Information</h3>
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center text-xl">👨🏼</div>
+                                <div>
+                                    <div className="text-sm text-gray-500">Father's Name</div>
+                                    <div className="font-bold text-gray-900">{user.fatherName || "--"}</div>
+                                    <div className="text-xs text-gray-400">{user.fatherProfession}</div>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center text-xl">👩🏼</div>
+                                <div>
+                                    <div className="text-sm text-gray-500">Mother's Name</div>
+                                    <div className="font-bold text-gray-900">{user.motherName || "--"}</div>
+                                    <div className="text-xs text-gray-400">{user.motherProfession}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Card 3: Documents */}
+                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                        <h3 className="font-bold text-gray-400 text-xs uppercase tracking-wider mb-4 border-b border-gray-100 pb-2">Identity Documents</h3>
+                        <div className="space-y-3">
+                            <div className="flex justify-between items-center p-3 rounded-xl bg-gray-50 border border-gray-100">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-lg bg-orange-100 flex items-center justify-center text-xs font-bold text-orange-600">AAD</div>
+                                    <span className="font-medium text-gray-700 text-sm">Aadhar Card</span>
+                                </div>
+                                <span className={`text-xs font-bold ${user.aadhar ? "text-green-600" : "text-red-500"}`}>{user.aadhar ? "Linked ✓" : "Missing"}</span>
+                            </div>
+                            <div className="flex justify-between items-center p-3 rounded-xl bg-gray-50 border border-gray-100">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center text-xs font-bold text-blue-600">PAN</div>
+                                    <span className="font-medium text-gray-700 text-sm">PAN Card</span>
+                                </div>
+                                <span className={`text-xs font-bold ${user.pan ? "text-green-600" : "text-red-500"}`}>{user.pan ? "Linked ✓" : "Missing"}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            {/* 3. Schemes Section */}
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in-up animate-delay-200">
+                <h2 className="text-xl font-bold text-gray-900 mb-6">Scheme Applications</h2>
+
+                {/* Tabs */}
+                <div className="bg-white rounded-t-3xl border-b border-gray-200 px-6 pt-4 flex gap-8">
+                    {["applied", "saved"].map((tab) => (
+                        <button
+                            key={tab}
+                            onClick={() => setActiveTab(tab)}
+                            className={`pb-4 font-bold text-sm uppercase tracking-wide transition-all border-b-4 ${activeTab === tab ? "border-blue-600 text-blue-600" : "border-transparent text-gray-400 hover:text-gray-600"}`}
+                        >
+                            {tab === "applied" ? "Applied Schemes" : "Saved Schemes"}
+                        </button>
+                    ))}
+                </div>
+
+                <div className="bg-white rounded-b-3xl shadow-sm border border-gray-100 p-8 min-h-[300px]">
+                    {activeTab === "applied" && (
+                        <div className="space-y-4">
+                            {user.appliedSchemes && user.appliedSchemes.length > 0 ? (
+                                user.appliedSchemes.map((scheme: any) => (
+                                    <div key={scheme.id} className="border border-gray-100 rounded-2xl p-6 hover:shadow-md transition-shadow flex justify-between items-center bg-gray-50/50">
+                                        <div>
+                                            <div className="text-xs font-bold text-gray-400 uppercase mb-1">Applied on {scheme.date}</div>
+                                            <h3 className="text-lg font-bold text-gray-900">{scheme.name}</h3>
+                                            <div className="text-sm text-gray-600 mt-1">Benefit Amount: <span className="font-bold text-green-600">{scheme.amount}</span></div>
+                                        </div>
+                                        <div className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider border ${scheme.status === "Approved" ? "bg-green-100 text-green-700 border-green-200" :
+                                            scheme.status === "Processing" ? "bg-yellow-100 text-yellow-700 border-yellow-200" : "bg-red-100 text-red-700 border-red-200"
+                                            }`}>
+                                            {scheme.status}
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="text-center py-12 text-gray-400">No schemes applied yet.</div>
+                            )}
+                        </div>
+                    )}
+
+                    {activeTab === "saved" && (
+                        <div className="space-y-4">
+                            {user.savedSchemes && user.savedSchemes.length > 0 ? (
+                                user.savedSchemes.map((scheme: any) => (
+                                    <div key={scheme.id} className="border border-gray-100 rounded-2xl p-6 hover:shadow-md transition-shadow flex justify-between items-center bg-gray-50/50">
+                                        <div>
+                                            <div className="bg-blue-100 text-blue-700 text-xs font-bold px-2 py-1 rounded inline-block mb-2 uppercase">{scheme.category}</div>
+                                            <h3 className="text-lg font-bold text-gray-900">{scheme.name}</h3>
+                                        </div>
+                                        <button className="bg-blue-600 text-white px-6 py-2 rounded-full font-bold text-sm hover:bg-blue-700 transition-colors shadow-lg shadow-blue-500/20">Apply Now</button>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="text-center py-12 text-gray-400">No saved schemes.</div>
+                            )}
+                        </div>
+                    )}
+                </div>
+            </div>
+
+        </main>
+    );
+}
