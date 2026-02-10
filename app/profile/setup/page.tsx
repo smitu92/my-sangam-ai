@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useAuth } from "@/context/AuthContext";
 
 interface UserProfile {
     name: string;
@@ -28,7 +29,11 @@ interface UserProfile {
 
 export default function ProfileSetupPage() {
     const router = useRouter();
+    const { user: authUser, setUser: setAuthUser } = useAuth();
     const [currentStep, setCurrentStep] = useState(1);
+    const [isLoading, setIsLoading] = useState(false);
+
+    // Initialize state with auth user data if available
     const [user, setUser] = useState<UserProfile>({
         name: "",
         email: "",
@@ -52,21 +57,65 @@ export default function ProfileSetupPage() {
     });
 
     useEffect(() => {
-        const storedUser = localStorage.getItem("userProfile");
-        if (storedUser) {
-            setUser(JSON.parse(storedUser));
+        if (authUser) {
+            // Only populate if local state is empty to avoid overwriting user edits
+            // or just spread existing authUser data
+            setUser(prev => ({
+                ...prev,
+                // spread authUser but filter out nulls/undefined if needed
+                ...(authUser as any),
+                mobile: (authUser as any).mobile || "",
+                dob: (authUser as any).dob || "",
+                gender: (authUser as any).gender || "",
+                category: (authUser as any).category || "",
+                income: (authUser as any).income || "",
+                occupation: (authUser as any).occupation || "",
+                location: (authUser as any).location || "",
+                aadhar: (authUser as any).aadhar || "",
+                pan: (authUser as any).pan || "",
+                fatherName: (authUser as any).fatherName || "",
+                fatherProfession: (authUser as any).fatherProfession || "",
+                motherName: (authUser as any).motherName || "",
+                motherProfession: (authUser as any).motherProfession || "",
+                role: (authUser as any).role || "User",
+                // Ensure array fields are arrays
+                documents: (authUser as any).documents || [],
+                appliedSchemes: (authUser as any).appliedSchemes || [],
+                savedSchemes: (authUser as any).savedSchemes || []
+            }));
         }
-    }, []);
+    }, [authUser]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         setUser(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleSave = () => {
-        localStorage.setItem("userProfile", JSON.stringify(user));
-        alert("Profile Setup Complete!");
-        router.push("/profile");
+    const handleSave = async () => {
+        setIsLoading(true);
+        try {
+            // We can create a dedicated profile update API endpoint
+            // For now, let's assume register handles initial data, 
+            // but we need an UPDATE endpoint for profile completion.
+            // I will create /api/user/update next.
+            const res = await fetch("/api/user/update", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(user)
+            });
+
+            if (!res.ok) throw new Error("Failed to update profile");
+
+            const data = await res.json();
+            setAuthUser(data.user);
+            alert("Profile Setup Complete!");
+            router.push("/profile");
+        } catch (error) {
+            console.error(error);
+            alert("Error saving profile");
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const nextStep = () => setCurrentStep(prev => Math.min(prev + 1, 5));

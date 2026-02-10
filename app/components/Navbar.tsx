@@ -1,30 +1,22 @@
 "use client";
 
-import Image from "next/image";
-import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useAuth } from "@/context/AuthContext";
+import { useState } from "react";
 import { usePathname } from "next/navigation";
 import MobileMenu from "./MobileMenu";
 import ProfileSidebar from "./ProfileSidebar";
+import Image from "next/image"; // Re-import Image
+import Link from "next/link"; // Re-import Link
 
 export default function Navbar() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isProfileOpen, setIsProfileOpen] = useState(false);
-    const [user, setUser] = useState<{ name: string, email?: string, role?: string, gender?: string } | null>(null);
+    const { user, logout } = useAuth();
     const pathname = usePathname();
 
-    useEffect(() => {
-        const storedUser = localStorage.getItem("userProfile");
-        if (storedUser) {
-            setUser(JSON.parse(storedUser));
-        }
-    }, [pathname]);
-
     const handleLogout = () => {
-        localStorage.removeItem("userProfile");
-        setUser(null);
+        logout();
         setIsProfileOpen(false);
-        window.location.href = "/";
     };
 
     const isActive = (path: string) => pathname === path ? "text-blue-600 font-bold bg-blue-50" : "text-gray-600 hover:text-blue-600 hover:bg-gray-50 font-medium";
@@ -47,6 +39,11 @@ export default function Navbar() {
                             <Link href="/loans" className={`${isActive("/loans")} px-4 py-2 rounded-lg text-sm transition-all`}>Loans</Link>
                             <Link href="/categories" className={`${isActive("/categories")} px-4 py-2 rounded-lg text-sm transition-all`}>Categories</Link>
                             <Link href="/news" className={`${isActive("/news")} px-4 py-2 rounded-lg text-sm transition-all`}>News</Link>
+                            {user?.role === "admin" && (
+                                <Link href="/admin/dashboard" className="px-4 py-2 rounded-lg text-sm font-bold text-red-600 bg-red-50 hover:bg-red-100 transition-all border border-red-200">
+                                    Admin Panel
+                                </Link>
+                            )}
                         </div>
 
                         {/* Right Side Actions */}

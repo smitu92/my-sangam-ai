@@ -4,8 +4,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 
+import { useAuth } from "@/context/AuthContext";
+
 export default function Home() {
   const [scrollY, setScrollY] = useState(0);
+  const { user } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => setScrollY(window.scrollY);
@@ -234,8 +237,8 @@ export default function Home() {
         <div className="max-w-4xl mx-auto text-center relative z-10 px-4">
           <h2 className="text-3xl md:text-5xl font-black mb-8 text-gray-900">Ready to Claim Your Benefits?</h2>
           <p className="text-xl text-slate-600 mb-12">Join 10 Million+ Indians who have already found their path to prosperity.</p>
-          <Link href="/login" className="inline-block px-12 py-5 bg-blue-600 text-white rounded-full font-black text-xl shadow-xl shadow-blue-500/30 hover:bg-blue-700 transition-all hover:scale-105 hover:shadow-blue-600/40">
-            Get Started Now
+          <Link href={user ? "/profile" : "/register"} className="inline-block px-12 py-5 bg-blue-600 text-white rounded-full font-black text-xl shadow-xl shadow-blue-500/30 hover:bg-blue-700 transition-all hover:scale-105 hover:shadow-blue-600/40">
+            {user ? "Go to Dashboard" : "Get Started Now"}
           </Link>
         </div>
       </section>

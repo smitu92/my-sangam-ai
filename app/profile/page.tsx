@@ -1,82 +1,34 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-
-// Define Interfaces
-interface Scheme {
-    id: number;
-    name: string;
-    category?: string;
-    status?: string;
-    date?: string;
-    amount?: string;
-}
-
-interface UserProfile {
-    name: string;
-    email: string;
-    mobile: string;
-    dob: string;
-    gender: string;
-    category: string;
-    income: string;
-    occupation: string;
-    role: string;
-    location: string;
-    aadhar: string;
-    pan: string;
-    fatherName: string;
-    fatherProfession: string;
-    motherName: string;
-    motherProfession: string;
-    documents: string[];
-    appliedSchemes: Scheme[];
-    savedSchemes: Scheme[];
-}
+import { useState } from "react";
+import { useAuth } from "@/context/AuthContext";
 
 export default function ProfilePage() {
-    const router = useRouter();
+    const { user, loading } = useAuth();
     const [activeTab, setActiveTab] = useState("applied");
-    const [isLoading, setIsLoading] = useState(true);
 
-    // Default Initial State
-    const [user, setUser] = useState<UserProfile>({
-        name: "",
-        email: "",
-        mobile: "",
-        dob: "",
-        gender: "",
-        category: "",
-        income: "",
-        occupation: "",
-        role: "",
-        location: "",
-        aadhar: "",
-        pan: "",
-        fatherName: "",
-        fatherProfession: "",
-        motherName: "",
-        motherProfession: "",
-        documents: [],
-        appliedSchemes: [],
-        savedSchemes: []
-    });
+    if (loading) return <div className="min-h-screen pt-32 flex justify-center text-blue-600 font-bold items-center bg-gray-50">Loading profile...</div>;
 
-    // Load from LocalStorage on Mount
-    useEffect(() => {
-        const storedUser = localStorage.getItem("userProfile");
-        if (storedUser) {
-            setUser(JSON.parse(storedUser));
-            setIsLoading(false);
-        } else {
-            // If no profile, interactively redirect
-            router.push("/profile/setup");
+    if (!user) return <div className="min-h-screen pt-32 flex justify-center items-center">Please login to view profile</div>;
+
+    // Use user data from context directly, with fallbacks where necessary
+    const userData = {
+        ...user,
+        appliedSchemes: (user as any).appliedSchemes || [],
+        savedSchemes: (user as any).savedSchemes || []
+    };
+
+    // Very basic check: if mobile is missing, assume profile is incomplete
+    // In a real app, use a dedicated 'isProfileComplete' flag
+    if (!user.mobile) {
+        // We can do this check here or in a useEffect
+        // Returning null or loader to prevent flash
+        if (typeof window !== "undefined") {
+            window.location.href = "/profile/setup";
         }
-    }, [router]);
-
-    if (isLoading) return <div className="min-h-screen pt-32 flex justify-center text-blue-600 font-bold items-center bg-gray-50">Loading profile...</div>;
+        return null;
+    }
 
     return (
         <main className="min-h-screen pb-20 bg-gray-50">
