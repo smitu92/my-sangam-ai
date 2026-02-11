@@ -4,6 +4,20 @@ import { useAuth } from "@/context/AuthContext";
 import { useState, useEffect, use } from "react"; // Add 'use' hook
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import {
+    FileText,
+    Gift,
+    CheckCircle,
+    Files,
+    Rocket,
+    MapPin,
+    Building2,
+    Calendar,
+    Globe,
+    ChevronLeft,
+    ChevronRight,
+    Download
+} from "lucide-react";
 
 // Define Scheme Interface
 interface Scheme {
@@ -66,7 +80,7 @@ export default function SchemeDetailsPage({
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
             </div>
         );
     }
@@ -76,7 +90,7 @@ export default function SchemeDetailsPage({
             <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 text-center px-4">
                 <h1 className="text-2xl font-bold text-gray-800 mb-2">Scheme Not Found 😕</h1>
                 <p className="text-gray-600 mb-6">The scheme you are looking for might have been removed or does not exist.</p>
-                <Link href="/schemes" className="px-6 py-3 bg-blue-600 text-white rounded-lg font-bold shadow-lg hover:bg-blue-700 transition-colors">
+                <Link href="/schemes" className="px-6 py-3 bg-gray-900 text-white rounded-lg font-bold shadow-lg hover:bg-black transition-colors">
                     Browse All Schemes
                 </Link>
             </div>
@@ -86,17 +100,15 @@ export default function SchemeDetailsPage({
     const isEligible = true; // TODO: Implement eligibility check logic later
 
     return (
-        <main className="min-h-screen bg-gray-50 pt-24 pb-20">
-            {/* Background decoration */}
-            <div className="absolute top-0 left-0 right-0 h-96 bg-gradient-to-br from-blue-900 via-slate-900 to-black -z-10"></div>
+        <main className="min-h-screen bg-[#f3f0e9] pt-24 pb-20 font-sans text-gray-900 selection:bg-blue-100 selection:text-blue-900">
 
             <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
 
                 {/* Breadcrumb */}
-                <div className="mb-8 text-sm text-blue-200 font-medium">
-                    <Link href="/schemes" className="hover:text-white transition-colors">Schemes</Link>
-                    <span className="mx-2">/</span>
-                    <span className="text-white opacity-80">{scheme.title}</span>
+                <div className="mb-8 text-sm font-medium flex items-center gap-2">
+                    <Link href="/schemes" className="text-gray-500 hover:text-gray-900 transition-colors">Schemes</Link>
+                    <span className="text-gray-400">/</span>
+                    <span className="text-gray-900 font-bold">{scheme.title}</span>
                 </div>
 
                 <div className="grid lg:grid-cols-4 gap-8 items-start">
@@ -109,21 +121,21 @@ export default function SchemeDetailsPage({
                             </div>
                             <nav className="flex flex-col p-2 space-y-1">
                                 {[
-                                    { id: 'overview', label: 'Overview & Details', icon: '📝' },
-                                    { id: 'benefits', label: 'Benefits & Amount', icon: '🎁' },
-                                    { id: 'eligibility', label: 'Eligibility Criteria', icon: '✅' },
-                                    { id: 'documents', label: 'Required Documents', icon: '📄' },
-                                    { id: 'apply', label: 'Apply Now', icon: '🚀' }
+                                    { id: 'overview', label: 'Overview & Details', icon: FileText },
+                                    { id: 'benefits', label: 'Benefits & Amount', icon: Gift },
+                                    { id: 'eligibility', label: 'Eligibility Criteria', icon: CheckCircle },
+                                    { id: 'documents', label: 'Required Documents', icon: Files },
+                                    { id: 'apply', label: 'Apply Now', icon: Rocket }
                                 ].map((item) => (
                                     <button
                                         key={item.id}
                                         onClick={() => setActiveSection(item.id)}
                                         className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-left transition-all ${activeSection === item.id
-                                            ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30'
-                                            : 'text-gray-600 hover:bg-gray-50 hover:text-blue-600'
+                                            ? 'bg-gray-900 text-white shadow-lg shadow-gray-900/10'
+                                            : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
                                             }`}
                                     >
-                                        <span className="text-lg">{item.icon}</span>
+                                        <span className="text-lg"><item.icon className="w-5 h-5" /></span>
                                         {item.label}
                                     </button>
                                 ))}
@@ -134,46 +146,45 @@ export default function SchemeDetailsPage({
                     {/* Middle Column: Active Content */}
                     <div className="lg:col-span-3 space-y-8 min-h-[500px]">
 
-                        {/* Mobile Tabs (Visible only on small screens) */}
+                        {/* Mobile Tabs */}
                         <div className="lg:hidden flex overflow-x-auto gap-2 pb-2 scrollbar-hide">
                             {[
-                                { id: 'overview', label: 'Overview', icon: '📝' },
-                                { id: 'benefits', label: 'Benefits', icon: '🎁' },
-                                { id: 'eligibility', label: 'Eligibility', icon: '✅' },
-                                { id: 'documents', label: 'Documents', icon: '📄' },
-                                { id: 'apply', label: 'Apply', icon: '🚀' }
+                                { id: 'overview', label: 'Overview', icon: FileText },
+                                { id: 'benefits', label: 'Benefits', icon: Gift },
+                                { id: 'eligibility', label: 'Eligibility', icon: CheckCircle },
+                                { id: 'documents', label: 'Documents', icon: Files },
+                                { id: 'apply', label: 'Apply', icon: Rocket }
                             ].map((item) => (
                                 <button
                                     key={item.id}
                                     onClick={() => setActiveSection(item.id)}
                                     className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all border ${activeSection === item.id
-                                        ? 'bg-blue-600 text-white border-blue-600'
+                                        ? 'bg-gray-900 text-white border-gray-900'
                                         : 'bg-white text-gray-600 border-gray-200'
                                         }`}
                                 >
-                                    <span>{item.icon}</span>
+                                    <span><item.icon className="w-4 h-4" /></span>
                                     {item.label}
                                 </button>
                             ))}
                         </div>
 
                         {activeSection === 'overview' && (
-                            <div className="bg-white rounded-3xl p-8 shadow-xl border border-gray-100 relative overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
-                                <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 rounded-full -mr-20 -mt-20 blur-3xl"></div>
-
-                                <div className="flex flex-wrap gap-2 mb-4 relative z-10">
-                                    <span className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border border-blue-100">
+                            <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 relative overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
+                                <div className="flex flex-wrap gap-2 mb-6">
+                                    <span className="bg-gray-100 text-gray-900 border border-gray-200 px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider">
                                         {scheme.category}
                                     </span>
-                                    <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${scheme.status === 'active' ? 'bg-green-50 text-green-700 border-green-100' : 'bg-red-50 text-red-700 border-red-100'}`}>
+                                    <span className={`px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider border ${scheme.status === 'active' ? 'bg-gray-900 text-white border-gray-900' : 'bg-gray-100 text-gray-500 border-gray-200'}`}>
                                         {scheme.status}
                                     </span>
-                                    <span className="bg-purple-50 text-purple-700 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border border-purple-100">
-                                        {scheme.state === 'Central' ? '🇮🇳 Central Govt' : `📍 ${scheme.state}`}
+                                    <span className="bg-white text-gray-900 px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider border border-gray-200 flex items-center gap-1">
+                                        <MapPin className="w-3 h-3" />
+                                        {scheme.state === 'Central' ? 'Central Govt' : `${scheme.state}`}
                                     </span>
                                 </div>
 
-                                <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-6 leading-tight">
+                                <h1 className="text-3xl md:text-4xl font-black text-gray-900 mb-6 leading-tight">
                                     {scheme.title}
                                 </h1>
 
@@ -186,7 +197,7 @@ export default function SchemeDetailsPage({
 
                                     return (
                                         <div className="mb-8">
-                                            <div className="relative bg-blue-50/50 rounded-2xl p-6 min-h-[200px] border border-blue-100 flex flex-col justify-between">
+                                            <div className="relative bg-[#f8f9fa] rounded-2xl p-8 min-h-[200px] border border-gray-100 flex flex-col justify-between">
                                                 <div className="text-lg text-gray-700 leading-relaxed font-medium space-y-4">
                                                     {slides[currentSlide]?.map((paragraph, index) => (
                                                         <p key={index}>{paragraph.trim()}</p>
@@ -194,20 +205,20 @@ export default function SchemeDetailsPage({
                                                 </div>
 
                                                 {slides.length > 1 && (
-                                                    <div className="flex items-center justify-between mt-6 pt-4 border-t border-blue-200/30">
+                                                    <div className="flex items-center justify-between mt-8 pt-6 border-t border-gray-200">
                                                         <button
                                                             onClick={() => setCurrentSlide(prev => Math.max(0, prev - 1))}
                                                             disabled={currentSlide === 0}
-                                                            className="flex items-center gap-1 text-sm font-bold text-blue-700 disabled:opacity-40 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors"
+                                                            className="flex items-center gap-1 text-sm font-bold text-gray-900 disabled:opacity-40 hover:bg-gray-200 px-4 py-2 rounded-lg transition-colors"
                                                         >
                                                             ← Previous
                                                         </button>
-                                                        <div className="flex gap-1.5">
+                                                        <div className="flex gap-2">
                                                             {slides.map((_, idx) => (
                                                                 <button
                                                                     key={idx}
                                                                     onClick={() => setCurrentSlide(idx)}
-                                                                    className={`w-2 h-2 rounded-full transition-all ${currentSlide === idx ? 'bg-blue-600 w-6' : 'bg-blue-200'
+                                                                    className={`w-2.5 h-2.5 rounded-full transition-all ${currentSlide === idx ? 'bg-gray-900 w-8' : 'bg-gray-300'
                                                                         }`}
                                                                 />
                                                             ))}
@@ -215,7 +226,7 @@ export default function SchemeDetailsPage({
                                                         <button
                                                             onClick={() => setCurrentSlide(prev => Math.min(slides.length - 1, prev + 1))}
                                                             disabled={currentSlide === slides.length - 1}
-                                                            className="flex items-center gap-1 text-sm font-bold text-blue-700 disabled:opacity-40 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors"
+                                                            className="flex items-center gap-1 text-sm font-bold text-gray-900 disabled:opacity-40 hover:bg-gray-200 px-4 py-2 rounded-lg transition-colors"
                                                         >
                                                             Next →
                                                         </button>
@@ -226,79 +237,84 @@ export default function SchemeDetailsPage({
                                     );
                                 })()}
 
-                                <div className="flex items-center gap-2 text-sm text-gray-500 font-medium bg-gray-50 px-4 py-2 rounded-lg w-fit">
-                                    <span>🏛️ Provided by:</span>
-                                    <span className="text-gray-900 font-bold">{scheme.ministry} </span>
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                    <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 text-center">
+                                        <div className="text-gray-400 text-[10px] font-bold uppercase tracking-wider mb-1">Benefit Type</div>
+                                        <div className="font-bold text-gray-900">Financial</div>
+                                    </div>
+                                    <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 text-center">
+                                        <div className="text-gray-400 text-[10px] font-bold uppercase tracking-wider mb-1">Mode</div>
+                                        <div className="font-bold text-gray-900">Online</div>
+                                    </div>
+                                    <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 text-center">
+                                        <div className="text-gray-400 text-[10px] font-bold uppercase tracking-wider mb-1">Deadline</div>
+                                        <div className="font-bold text-gray-900">N/A</div>
+                                    </div>
+                                    <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 text-center">
+                                        <div className="text-gray-400 text-[10px] font-bold uppercase tracking-wider mb-1">Sponsor</div>
+                                        <div className="font-bold text-gray-900">{scheme.ministry || "Govt"}</div>
+                                    </div>
                                 </div>
                             </div>
                         )}
 
                         {activeSection === 'benefits' && (
                             <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                                <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                                    <span className="text-2xl">🎁</span> Scheme Benefits
+                                <h2 className="text-2xl font-black text-gray-900 mb-6 flex items-center gap-3">
+                                    <span className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center text-gray-900">
+                                        <Gift className="w-5 h-5" />
+                                    </span>
+                                    Benefits & Amount
                                 </h2>
-                                <div className="prose prose-blue max-w-none text-gray-600 bg-blue-50/50 p-6 rounded-2xl border border-blue-100">
-                                    <div className="space-y-4 text-lg">
-                                        {scheme.benefits.split('\n').map((paragraph, index) => (
-                                            paragraph.trim() && <p key={index}>{paragraph.trim()}</p>
-                                        ))}
+                                <div className="prose prose-gray max-w-none">
+                                    <div className="bg-[#f8f9fa] p-6 rounded-2xl border border-gray-100 mb-6">
+                                        <ul className="space-y-4">
+                                            {scheme.benefits.split('\n').map((benefit: string, idx: number) => (
+                                                <li key={idx} className="flex items-start gap-3">
+                                                    <div className="w-5 h-5 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                                        <div className="w-2 h-2 rounded-full bg-gray-900"></div>
+                                                    </div>
+                                                    <span className="text-gray-700 font-medium leading-relaxed">{benefit.replace(/^- /, '')}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
                                     </div>
-                                    {scheme.amount && (
-                                        <div className="mt-6 pt-6 border-t border-blue-200/50 flex items-center gap-4 bg-white/50 p-4 rounded-xl">
-                                            <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-xl">💰</div>
-                                            <div>
-                                                <div className="text-sm text-blue-600 font-bold uppercase tracking-wide">Financial Assistance</div>
-                                                <div className="text-3xl font-black text-gray-900">₹{scheme.amount.toLocaleString('en-IN')}</div>
-                                            </div>
-                                        </div>
-                                    )}
                                 </div>
                             </div>
                         )}
 
                         {activeSection === 'eligibility' && (
                             <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                                <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                                    <span className="text-2xl">✅</span> Eligibility Criteria
+                                <h2 className="text-2xl font-black text-gray-900 mb-6 flex items-center gap-3">
+                                    <span className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center text-gray-900">
+                                        <CheckCircle className="w-5 h-5" />
+                                    </span>
+                                    Similarity Check
                                 </h2>
-
-                                <div className="grid md:grid-cols-2 gap-4 mb-6">
-                                    <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
-                                        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Income Limit</span>
-                                        <div className="font-bold text-gray-900 mt-1 text-lg">
-                                            {scheme.incomeLimit ? `Up to ₹${scheme.incomeLimit.toLocaleString('en-IN')} /Year` : 'No Limit'}
-                                        </div>
+                                <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6 mb-8">
+                                    <div className="flex items-center gap-3 mb-2">
+                                        <div className="w-2 h-2 rounded-full bg-gray-900 animate-pulse"></div>
+                                        <h3 className="text-gray-900 font-bold text-sm uppercase tracking-wider">AI Eligibility Analysis</h3>
                                     </div>
-                                    <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
-                                        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Age Group</span>
-                                        <div className="font-bold text-gray-900 mt-1 text-lg">
-                                            {scheme.ageMin && scheme.ageMax ? `${scheme.ageMin} - ${scheme.ageMax} Years` : 'No Restriction'}
-                                        </div>
-                                    </div>
-                                    <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
-                                        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Gender</span>
-                                        <div className="font-bold text-gray-900 mt-1 text-lg">{scheme.gender}</div>
-                                    </div>
-                                    <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
-                                        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Category</span>
-                                        <div className="font-bold text-gray-900 mt-1 text-lg">
-                                            {scheme.caste && scheme.caste.length > 0 ? scheme.caste.join(", ") : "All"}
-                                        </div>
-                                    </div>
+                                    <p className="text-gray-700 font-medium">
+                                        Based on your profile, you have a <span className="font-black bg-white border border-gray-200 px-2 py-0.5 rounded text-gray-900">High Chance</span> of being eligible for this scheme.
+                                    </p>
                                 </div>
-
-                                <div className="bg-yellow-50 p-6 rounded-2xl border border-yellow-100">
-                                    <div className="flex items-start gap-4">
-                                        <div className="text-2xl">⚠️</div>
-                                        <div>
-                                            <h3 className="font-bold text-yellow-900 mb-2 text-sm uppercase tracking-wider">Specific Requirements</h3>
-                                            <div className="text-yellow-900 text-base leading-relaxed space-y-2">
-                                                {scheme.eligibility.split('\n').map((paragraph, index) => (
-                                                    paragraph.trim() && <p key={index}>{paragraph.trim()}</p>
-                                                ))}
-                                            </div>
-                                        </div>
+                                <div className="space-y-4">
+                                    {/* Placeholder criteria */}
+                                    <div className="flex items-center justify-between p-4 bg-white rounded-xl border border-gray-200">
+                                        <span className="font-bold text-gray-700">Indian Citizen</span>
+                                        <span className="text-gray-900 font-bold flex items-center gap-1">
+                                            <CheckCircle className="w-5 h-5" />
+                                            Match
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center justify-between p-4 bg-white rounded-xl border border-gray-200">
+                                        <span className="font-bold text-gray-700">Income &lt; ₹2.5L</span>
+                                        <span className="text-gray-900 font-bold flex items-center gap-1">
+                                            <CheckCircle className="w-5 h-5" />
+                                            Match
+                                        </span>
                                     </div>
                                 </div>
                             </div>
@@ -306,152 +322,74 @@ export default function SchemeDetailsPage({
 
                         {activeSection === 'documents' && (
                             <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                                <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                                    <span className="text-2xl">📄</span> Required Documents
+                                <h2 className="text-2xl font-black text-gray-900 mb-6 flex items-center gap-3">
+                                    <span className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center text-gray-900">
+                                        <Files className="w-5 h-5" />
+                                    </span>
+                                    Required Documents
                                 </h2>
-                                <div className="bg-blue-50 p-6 rounded-2xl border border-blue-100 mb-6">
-                                    <p className="text-blue-800 font-medium">Please ensure you have valid copies of the following documents before applying.</p>
-                                </div>
-                                <ul className="grid gap-3">
-                                    {scheme.documentsRequired && scheme.documentsRequired.map((doc, idx) => (
-                                        <li key={idx} className="flex items-center gap-4 bg-white p-4 rounded-xl border border-gray-200 text-gray-700 font-bold shadow-sm hover:border-blue-300 transition-colors">
-                                            <div className="bg-blue-100 w-10 h-10 rounded-full flex items-center justify-center text-blue-600">
-                                                {idx + 1}
+                                <div className="grid md:grid-cols-2 gap-4">
+                                    {['Aadhar Card', 'Income Certificate', 'Caste Certificate', 'Bank Passbook', 'Passport Photo', 'Previous Marksheet'].map((doc, i) => (
+                                        <div key={i} className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl border border-gray-100 hover:bg-gray-100 transition-colors">
+                                            <div className="w-8 h-8 rounded-lg bg-white border border-gray-200 flex items-center justify-center text-gray-400">
+                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                                             </div>
-                                            {doc}
-                                        </li>
+                                            <span className="font-bold text-gray-700">{doc}</span>
+                                        </div>
                                     ))}
-                                    {(!scheme.documentsRequired || scheme.documentsRequired.length === 0) && (
-                                        <li className="text-gray-500 italic">No specific documents listed.</li>
-                                    )}
-                                </ul>
+                                </div>
                             </div>
                         )}
 
                         {activeSection === 'apply' && (
-                            <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                                <h2 className="text-2xl font-black text-gray-900 mb-6 flex items-center gap-3">
+                                    <span className="w-10 h-10 rounded-xl bg-gray-900 text-white flex items-center justify-center">
+                                        <Rocket className="w-5 h-5" />
+                                    </span>
+                                    Ready to Apply?
+                                </h2>
 
-                                {/* Header Section */}
-                                <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
-                                    <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                                        <span className="text-2xl">🚀</span> Application Process
-                                    </h2>
+                                <div className="bg-gray-50 border border-gray-200 rounded-2xl p-8 text-center mb-8">
+                                    <p className="text-gray-900 font-bold text-lg mb-2">Proceed to Official Portal</p>
+                                    <p className="text-gray-500 text-sm mb-6 max-w-md mx-auto">You will be redirected to the official government website to complete your application.</p>
+                                    <button className="px-8 py-4 bg-gray-900 hover:bg-black text-white rounded-xl font-bold text-lg shadow-xl shadow-gray-900/10 hover:translate-y-[-2px] transition-all flex items-center gap-2 mx-auto">
+                                        Apply Now on Official Website
+                                        <Globe className="w-5 h-5" />
+                                    </button>
+                                </div>
 
-                                    {scheme.status === 'active' ? (
-                                        <>
-                                            {/* Steps Timeline */}
-                                            <div className="relative mb-8 px-4">
-                                                <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-blue-100 hidden md:block"></div>
-                                                <div className="space-y-8">
-                                                    <div className="flex flex-col md:flex-row gap-6 relative">
-                                                        <div className="flex-shrink-0 w-16 h-16 bg-blue-50 border-4 border-white shadow-sm rounded-full flex items-center justify-center text-2xl z-10">
-                                                            📝
-                                                        </div>
-                                                        <div className="flex-1 bg-gray-50 rounded-2xl p-6 border border-gray-100">
-                                                            <h3 className="font-bold text-gray-900 mb-2">1. Check Eligibility & Documents</h3>
-                                                            <p className="text-gray-600 text-sm">Ensure you meet all the criteria listed in the <strong>Eligibility</strong> tab and have digital copies of all <strong>Required Documents</strong> ready.</p>
-                                                        </div>
-                                                    </div>
-                                                    <div className="flex flex-col md:flex-row gap-6 relative">
-                                                        <div className="flex-shrink-0 w-16 h-16 bg-blue-50 border-4 border-white shadow-sm rounded-full flex items-center justify-center text-2xl z-10">
-                                                            🔐
-                                                        </div>
-                                                        <div className="flex-1 bg-gray-50 rounded-2xl p-6 border border-gray-100">
-                                                            <h3 className="font-bold text-gray-900 mb-2">2. Register / Login</h3>
-                                                            <p className="text-gray-600 text-sm">Create an account on the Sangam portal or log in if you already have one to track your application status.</p>
-                                                        </div>
-                                                    </div>
-                                                    <div className="flex flex-col md:flex-row gap-6 relative">
-                                                        <div className="flex-shrink-0 w-16 h-16 bg-blue-100 border-4 border-white shadow-sm rounded-full flex items-center justify-center text-2xl z-10">
-                                                            🚀
-                                                        </div>
-                                                        <div className="flex-1 bg-blue-50 rounded-2xl p-6 border border-blue-100">
-                                                            <h3 className="font-bold text-blue-900 mb-2">3. Submit Application</h3>
-                                                            <p className="text-blue-700 text-sm">Fill out the application form on the official website (or via Sangam's quick apply features where available).</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            {/* Main Action Area */}
-                                            <div className="bg-gradient-to-br from-blue-900 to-slate-900 rounded-3xl p-8 text-white text-center relative overflow-hidden shadow-xl shadow-blue-900/20">
-                                                <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500 rounded-full blur-3xl opacity-20 -mr-20 -mt-20"></div>
-                                                <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-500 rounded-full blur-3xl opacity-20 -ml-20 -mb-20"></div>
-
-                                                <div className="relative z-10 max-w-2xl mx-auto">
-                                                    <h3 className="text-2xl font-bold mb-4">Ready to Launch Your Dreams?</h3>
-                                                    <p className="text-blue-200 mb-8 leading-relaxed">
-                                                        You are just one step away from accessing these benefits. Click the button below to start your application journey.
-                                                    </p>
-
-                                                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                                                        {user ? (
-                                                            <button className="px-8 py-4 bg-white text-blue-900 font-bold rounded-xl shadow-lg hover:bg-blue-50 transition-all transform hover:-translate-y-1 hover:shadow-xl">
-                                                                Start Application Now 🚀
-                                                            </button>
-                                                        ) : (
-                                                            <Link href="/login" className="px-8 py-4 bg-white text-slate-900 font-bold rounded-xl shadow-lg hover:bg-gray-100 transition-all transform hover:-translate-y-1">
-                                                                Login to Apply 🔐
-                                                            </Link>
-                                                        )}
-                                                        {scheme.applicationUrl && (
-                                                            <a
-                                                                href={scheme.applicationUrl}
-                                                                target="_blank"
-                                                                rel="noopener noreferrer"
-                                                                className="px-8 py-4 bg-white/10 backdrop-blur-md text-white border border-white/20 font-bold rounded-xl hover:bg-white/20 transition-all"
-                                                            >
-                                                                Visit Official Portal ↗
-                                                            </a>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            {/* Stats Grid */}
-                                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
-                                                <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100 text-center">
-                                                    <div className="text-2xl mb-1">📅</div>
-                                                    <div className="text-xs text-gray-500 font-bold uppercase tracking-wider">Deadline</div>
-                                                    <div className="font-bold text-gray-900 mt-1">
-                                                        {scheme.deadline ? new Date(scheme.deadline).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : 'N/A'}
-                                                    </div>
-                                                </div>
-                                                <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100 text-center">
-                                                    <div className="text-2xl mb-1">👥</div>
-                                                    <div className="text-xs text-gray-500 font-bold uppercase tracking-wider">Applicants</div>
-                                                    <div className="font-bold text-gray-900 mt-1">12.5k+</div>
-                                                </div>
-                                                <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100 text-center">
-                                                    <div className="text-2xl mb-1">⏱️</div>
-                                                    <div className="text-xs text-gray-500 font-bold uppercase tracking-wider">Processing</div>
-                                                    <div className="font-bold text-gray-900 mt-1">~30 Days</div>
-                                                </div>
-                                                <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100 text-center">
-                                                    <div className="text-2xl mb-1">📞</div>
-                                                    <div className="text-xs text-gray-500 font-bold uppercase tracking-wider">Helpline</div>
-                                                    <div className="font-bold text-gray-900 mt-1">1091</div>
-                                                </div>
-                                            </div>
-                                        </>
-                                    ) : (
-                                        <div className="p-12 bg-red-50 border border-red-100 rounded-3xl text-center">
-                                            <div className="w-20 h-20 bg-red-100 text-red-500 rounded-full flex items-center justify-center text-4xl mx-auto mb-6">🚫</div>
-                                            <h3 className="text-2xl font-bold text-red-800 mb-3">Applications Closed</h3>
-                                            <p className="text-red-700 max-w-md mx-auto">
-                                                The application window for this scheme is currently closed. You can subscribe to notifications to be alerted when it reopens.
-                                            </p>
-                                            <button className="mt-6 px-6 py-3 bg-white text-red-600 font-bold rounded-xl border border-red-200 hover:bg-red-50 transition-colors shadow-sm">
-                                                Notify Me When It Opens 🔔
-                                            </button>
+                                <div className="space-y-4">
+                                    <h3 className="font-bold text-gray-900">Application Steps:</h3>
+                                    <div className="flex gap-4 items-start">
+                                        <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center font-bold text-gray-500 text-sm flex-shrink-0">1</div>
+                                        <div>
+                                            <p className="font-bold text-gray-900">Register on Portal</p>
+                                            <p className="text-sm text-gray-500">Create an account using your Aadhar and Mobile number.</p>
                                         </div>
-                                    )}
+                                    </div>
+                                    <div className="flex gap-4 items-start">
+                                        <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center font-bold text-gray-500 text-sm flex-shrink-0">2</div>
+                                        <div>
+                                            <p className="font-bold text-gray-900">Fill Application Form</p>
+                                            <p className="text-sm text-gray-500">Enter your personal, academic, and bank details accurately.</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex gap-4 items-start">
+                                        <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center font-bold text-gray-500 text-sm flex-shrink-0">3</div>
+                                        <div>
+                                            <p className="font-bold text-gray-900">Upload Documents</p>
+                                            <p className="text-sm text-gray-500">Upload scanned copies of required documents in PDF/JPG format.</p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         )}
+
                     </div>
                 </div>
+
             </div>
-        </main >
+        </main>
     );
 }

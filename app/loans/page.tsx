@@ -5,24 +5,21 @@ import Link from "next/link";
 
 export default function LoansPage() {
     return (
-        <main className="w-full pb-20 bg-gray-50 min-h-screen">
+        <main className="w-full pb-20 bg-[#f3f0e9] min-h-screen">
             {/* Hero Section */}
-            <div className="relative bg-[#0F172A] pb-36 pt-40 overflow-hidden">
+            <div className="relative bg-[#111111] pb-36 pt-40 overflow-hidden text-white">
                 {/* Modern Grid Background */}
-                <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-20"></div>
-
-                {/* Glow Effects */}
-                <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-600/30 rounded-full blur-[100px] opacity-60 mix-blend-screen animate-pulse"></div>
-                <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-purple-600/20 rounded-full blur-[100px] opacity-40"></div>
+                <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:32px_32px]"></div>
+                <div className="absolute inset-0 bg-[radial-gradient(circle_800px_at_50%_-100px,#1a1a1a,transparent)]"></div>
 
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 pt-16 text-center">
-                    <span className="bg-indigo-500/10 backdrop-blur text-indigo-300 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wide border border-indigo-500/20 inline-block mb-6 shadow-sm ring-1 ring-indigo-500/10">
+                    <span className="bg-white/5 border border-white/10 text-gray-300 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wide inline-block mb-6 shadow-sm">
                         Financial Support
                     </span>
                     <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-6 tracking-tight drop-shadow-sm">
-                        Government <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 via-white to-purple-300">Loan Schemes</span>
+                        Government <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-white">Loan Schemes</span>
                     </h1>
-                    <p className="text-xl text-slate-300 max-w-2xl mx-auto font-light leading-relaxed opacity-90 mb-12">
+                    <p className="text-xl text-gray-400 max-w-2xl mx-auto font-light leading-relaxed opacity-90 mb-12">
                         Get low-interest loans, subsidies, and credit support for your business, education, or farming needs.
                     </p>
 
@@ -37,7 +34,7 @@ export default function LoansPage() {
                                 <div className="text-2xl bg-white/10 w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm">{info.icon}</div>
                                 <div>
                                     <h3 className="text-white font-bold text-sm mb-1">{info.title}</h3>
-                                    <p className="text-slate-400 text-xs leading-relaxed">{info.desc}</p>
+                                    <p className="text-gray-400 text-xs leading-relaxed">{info.desc}</p>
                                 </div>
                             </div>
                         ))}
@@ -232,18 +229,18 @@ export default function LoansPage() {
                             </div>
                         </div>
 
-                        <div className="md:w-1/2 w-full bg-gradient-to-br from-indigo-600 to-purple-700 rounded-3xl p-8 text-white text-center shadow-2xl shadow-indigo-500/40 animate-scale-in relative overflow-hidden">
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-10 -mt-10"></div>
+                        <div className="md:w-1/2 w-full bg-[#111111] rounded-3xl p-8 text-white text-center shadow-2xl shadow-black/40 animate-scale-in relative overflow-hidden">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl -mr-10 -mt-10"></div>
 
-                            <p className="text-indigo-200 text-sm font-bold uppercase tracking-wider mb-2">Estimated Monthly EMI</p>
+                            <p className="text-gray-400 text-sm font-bold uppercase tracking-wider mb-2">Estimated Monthly EMI</p>
                             <div className="text-6xl font-black mb-4 tracking-tight">₹ 10,625</div>
-                            <div className="flex justify-center gap-4 text-xs text-indigo-200 font-bold uppercase tracking-wider mb-8">
+                            <div className="flex justify-center gap-4 text-xs text-gray-400 font-bold uppercase tracking-wider mb-8">
                                 <span>Total Interest: ₹1.3L</span>
                                 <span>•</span>
                                 <span>Total Payable: ₹6.3L</span>
                             </div>
 
-                            <button className="bg-white text-indigo-600 px-8 py-4 rounded-full font-black text-lg hover:bg-indigo-50 transition-all w-full shadow-lg hover:shadow-xl hover:scale-105 active:scale-95">
+                            <button className="bg-white text-black px-8 py-4 rounded-full font-black text-lg hover:bg-gray-200 transition-all w-full shadow-lg hover:shadow-xl hover:scale-105 active:scale-95">
                                 Apply for Loan
                             </button>
                         </div>

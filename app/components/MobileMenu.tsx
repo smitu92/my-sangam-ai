@@ -17,7 +17,6 @@ export default function MobileMenu({ isOpen, onClose, user, onProfileClick }: Mo
         { href: "/", label: "Home", icon: "🏠" },
         { href: "/schemes", label: "Schemes", icon: "📜" },
         { href: "/loans", label: "Loans", icon: "💸" },
-        { href: "/categories", label: "Categories", icon: "🏷️" },
         { href: "/news", label: "News", icon: "newspaper" },
     ];
 
@@ -25,10 +24,10 @@ export default function MobileMenu({ isOpen, onClose, user, onProfileClick }: Mo
         <div className={`fixed inset-0 z-50 transition-opacity duration-300 ${isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}>
             <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose}></div>
 
-            <div className={`absolute top-0 left-0 h-full w-4/5 max-w-xs bg-white shadow-xl transform transition-transform duration-300 ease-in-out flex flex-col ${isOpen ? "translate-x-0" : "-translate-x-full"}`}>
+            <div className={`absolute top-0 left-0 h-full w-4/5 max-w-xs bg-[#111111] shadow-xl transform transition-transform duration-300 ease-in-out flex flex-col ${isOpen ? "translate-x-0" : "-translate-x-full"}`}>
 
                 {/* Header */}
-                <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                <div className="p-5 border-b border-white/10 flex justify-between items-center bg-[#111111]">
                     <div className="flex items-center gap-2">
                         <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">S</div>
                         <span className="font-bold text-lg text-gray-800">Sangam</span>
@@ -45,7 +44,7 @@ export default function MobileMenu({ isOpen, onClose, user, onProfileClick }: Mo
                             key={link.href}
                             href={link.href}
                             onClick={onClose}
-                            className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${pathname === link.href ? "bg-blue-50 text-blue-700" : "text-gray-700 hover:bg-gray-50"}`}
+                            className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${pathname === link.href ? "bg-white/10 text-white" : "text-gray-400 hover:bg-white/5 hover:text-white"}`}
                         >
                             <span className="text-gray-400">{link.icon === 'newspaper' ? '📰' : link.icon}</span>
                             {link.label}
@@ -54,14 +53,14 @@ export default function MobileMenu({ isOpen, onClose, user, onProfileClick }: Mo
                 </div>
 
                 {/* Footer */}
-                <div className="p-4 border-t border-gray-100 bg-gray-50">
+                <div className="p-4 border-t border-white/10 bg-[#111111]">
                     {user ? (
-                        <button onClick={() => { onClose(); onProfileClick(); }} className="flex items-center gap-3 px-2 w-full text-left hover:bg-gray-100 p-2 rounded-lg transition-colors">
-                            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold border border-blue-200">
+                        <button onClick={() => { onClose(); onProfileClick(); }} className="flex items-center gap-3 px-2 w-full text-left hover:bg-white/5 p-2 rounded-lg transition-colors">
+                            <div className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-white font-bold border border-gray-700">
                                 {user.name.charAt(0).toUpperCase()}
                             </div>
                             <div className="flex-1 min-w-0">
-                                <p className="font-medium text-gray-900 truncate">{user.name}</p>
+                                <p className="font-medium text-white truncate">{user.name}</p>
                                 <p className="text-xs text-blue-600">View Profile</p>
                             </div>
                         </button>

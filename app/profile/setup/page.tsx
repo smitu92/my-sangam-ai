@@ -130,22 +130,22 @@ export default function ProfileSetupPage() {
     ];
 
     return (
-        <main className="min-h-screen pt-32 pb-20 bg-gray-50 flex justify-center items-center px-4">
+        <main className="min-h-screen pt-32 pb-20 bg-[#f3f0e9] flex justify-center items-center px-4">
             <div className="max-w-4xl w-full bg-white rounded-3xl shadow-xl overflow-hidden flex flex-col md:flex-row animate-fade-in-up border border-gray-100 min-h-[600px]">
 
                 {/* Sidebar Steps (Desktop) */}
-                <div className="w-full md:w-1/3 bg-slate-900 text-white p-8 flex flex-col justify-between relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-slate-800 rounded-full -mr-32 -mt-32 opacity-50"></div>
-                    <div className="absolute bottom-0 left-0 w-64 h-64 bg-slate-800 rounded-full -ml-32 -mb-32 opacity-50"></div>
+                <div className="w-full md:w-1/3 bg-[#111111] text-white p-8 flex flex-col justify-between relative overflow-hidden">
+                    <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:16px_16px]"></div>
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_400px_at_50%_-100px,#1a1a1a,transparent)]"></div>
 
                     <div className="relative z-10">
                         <h1 className="text-2xl font-bold mb-2">Complete Your Profile</h1>
-                        <p className="text-slate-400 text-sm mb-12">Fill in your details to get personalized scheme recommendations.</p>
+                        <p className="text-gray-400 text-sm mb-12">Fill in your details to get personalized scheme recommendations.</p>
 
                         <div className="space-y-6">
                             {steps.map((step, idx) => (
                                 <div key={idx} className={`flex items-center gap-4 ${currentStep === idx + 1 ? "opacity-100" : "opacity-40"}`}>
-                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold transition-all ${currentStep === idx + 1 ? "bg-blue-500 text-white shadow-lg shadow-blue-500/50" : "bg-slate-800 text-slate-400"}`}>
+                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold transition-all ${currentStep === idx + 1 ? "bg-white text-black shadow-lg shadow-white/20" : "bg-white/10 text-gray-400"}`}>
                                         {currentStep > idx + 1 ? "✓" : idx + 1}
                                     </div>
                                     <span className="font-medium tracking-wide text-sm md:text-base">{step.title}</span>
@@ -161,7 +161,7 @@ export default function ProfileSetupPage() {
                 <div className="w-full md:w-2/3 p-8 md:p-12 flex flex-col">
                     <div className="flex-1">
                         <div className="mb-8">
-                            <span className="bg-blue-50 text-blue-600 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest mb-2 inline-block">Step {currentStep}</span>
+                            <span className="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest mb-2 inline-block">Step {currentStep}</span>
                             <h2 className="text-3xl font-bold text-gray-900">{steps[currentStep - 1].title} Details</h2>
                         </div>
 
@@ -302,11 +302,11 @@ export default function ProfileSetupPage() {
                         )}
 
                         {currentStep < 5 ? (
-                            <button onClick={nextStep} className="px-10 py-4 bg-slate-900 text-white rounded-xl font-bold shadow-lg shadow-slate-900/20 hover:bg-slate-800 transition-all hover:-translate-y-1">
+                            <button onClick={nextStep} className="px-10 py-4 bg-[#111111] text-white rounded-xl font-bold shadow-lg shadow-black/20 hover:bg-black transition-all hover:-translate-y-1">
                                 Next Step &rarr;
                             </button>
                         ) : (
-                            <button onClick={handleSave} className="px-10 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-bold shadow-lg shadow-blue-600/30 hover:shadow-xl transition-all hover:-translate-y-1">
+                            <button onClick={handleSave} className="px-10 py-4 bg-[#111111] text-white rounded-xl font-bold shadow-lg shadow-black/20 hover:bg-black transition-all hover:-translate-y-1">
                                 Finish Setup ✨
                             </button>
                         )}

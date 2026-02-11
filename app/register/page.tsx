@@ -52,16 +52,16 @@ export default function RegisterPage() {
     };
 
     return (
-        <main className="min-h-screen pt-32 pb-20 bg-gray-50 flex items-center justify-center px-4">
+        <main className="min-h-screen pt-32 pb-20 bg-[#f3f0e9] flex items-center justify-center px-4">
             <div className="max-w-md w-full bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100 animate-fade-in-up">
 
                 {/* Header */}
-                <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-8 text-center relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-10 rounded-full -mr-10 -mt-10"></div>
-                    <div className="absolute bottom-0 left-0 w-24 h-24 bg-black opacity-10 rounded-full -ml-10 -mb-10"></div>
+                <div className="bg-[#111111] p-8 text-center relative overflow-hidden">
+                    <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:16px_16px]"></div>
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_400px_at_50%_-100px,#1a1a1a,transparent)]"></div>
 
                     <h1 className="text-3xl font-extrabold text-white mb-2 relative z-10">Create Account</h1>
-                    <p className="text-blue-100 relative z-10">Join Sangam and discover your benefits.</p>
+                    <p className="text-gray-400 relative z-10">Join Sangam and discover your benefits.</p>
                 </div>
 
                 {/* Form */}
@@ -105,7 +105,7 @@ export default function RegisterPage() {
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold py-4 rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center"
+                            className="w-full bg-[#111111] text-white font-bold py-4 rounded-xl shadow-lg hover:bg-black hover:-translate-y-1 transition-all disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center"
                         >
                             {isLoading ? (
                                 <span className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></span>

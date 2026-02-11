@@ -31,15 +31,13 @@ export default function ProfilePage() {
     }
 
     return (
-        <main className="min-h-screen pb-20 bg-gray-50">
+        <main className="min-h-screen pb-20 bg-[#f3f0e9]">
 
             {/* 1. Hero / Header Section */}
-            <div className="relative bg-[#0F172A] pb-24 pt-32 overflow-hidden">
+            <div className="relative bg-[#111111] pb-24 pt-32 overflow-hidden text-white">
                 {/* Modern Grid Background */}
-                <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-20"></div>
-
-                {/* Glow Effects */}
-                <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[100px] opacity-60 mix-blend-screen animate-pulse"></div>
+                <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:32px_32px]"></div>
+                <div className="absolute inset-0 bg-[radial-gradient(circle_800px_at_50%_-100px,#1a1a1a,transparent)]"></div>
 
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 py-8 md:py-12">
                     <div className="flex flex-col md:flex-row items-center md:items-start gap-8 animate-fade-in-up">
@@ -56,8 +54,8 @@ export default function ProfilePage() {
                         {/* Main Info */}
                         <div className="text-center md:text-left flex-1">
                             <div className="flex flex-col md:flex-row md:items-center gap-3 mb-2">
-                                <h1 className="text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white via-blue-100 to-indigo-200">{user.name}</h1>
-                                <span className="bg-blue-500/10 text-blue-300 font-bold px-3 py-1 rounded-full text-xs uppercase tracking-wide border border-blue-400/20 self-center md:self-auto backdrop-blur-sm">
+                                <h1 className="text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-white">{user.name}</h1>
+                                <span className="bg-white/5 border border-white/10 text-gray-300 font-bold px-3 py-1 rounded-full text-xs uppercase tracking-wide self-center md:self-auto shadow-sm">
                                     {user.occupation || "Beneficiary"}
                                 </span>
                             </div>

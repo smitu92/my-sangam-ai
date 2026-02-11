@@ -5,24 +5,21 @@ import Link from "next/link";
 
 export default function NewsPage() {
     return (
-        <main className="w-full pb-20 bg-gray-50 min-h-screen">
+        <main className="w-full pb-20 bg-[#f3f0e9] min-h-screen">
             {/* Hero Section */}
-            <div className="relative bg-[#0F172A] pb-36 pt-40 overflow-hidden">
+            <div className="relative bg-[#111111] pb-36 pt-40 overflow-hidden text-white">
                 {/* Modern Grid Background */}
-                <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-20"></div>
-
-                {/* Glow Effects */}
-                <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-red-600/20 rounded-full blur-[100px] opacity-60 mix-blend-screen animate-pulse"></div>
-                <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-orange-600/10 rounded-full blur-[100px] opacity-40"></div>
+                <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:32px_32px]"></div>
+                <div className="absolute inset-0 bg-[radial-gradient(circle_800px_at_50%_-100px,#1a1a1a,transparent)]"></div>
 
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 pt-16 text-center">
-                    <span className="bg-red-500/10 backdrop-blur text-red-300 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wide border border-red-500/20 inline-block mb-6 shadow-sm ring-1 ring-red-500/10 animate-pulse">
+                    <span className="bg-white/5 border border-white/10 text-gray-300 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wide inline-block mb-6 shadow-sm">
                         Flash News
                     </span>
                     <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-6 tracking-tight drop-shadow-sm">
-                        Government <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-white to-orange-300">Spotlight</span>
+                        Government <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-white">Spotlight</span>
                     </h1>
-                    <p className="text-xl text-slate-300 max-w-2xl mx-auto font-light leading-relaxed opacity-90 mb-12">
+                    <p className="text-xl text-gray-400 max-w-2xl mx-auto font-light leading-relaxed opacity-90 mb-12">
                         Stay updated with the latest policy announcements, deadlines, and success stories.
                     </p>
 
@@ -37,7 +34,7 @@ export default function NewsPage() {
                                 <div className="text-2xl bg-white/10 w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm">{info.icon}</div>
                                 <div>
                                     <h3 className="text-white font-bold text-sm mb-1">{info.title}</h3>
-                                    <p className="text-slate-400 text-xs leading-relaxed">{info.desc}</p>
+                                    <p className="text-gray-400 text-xs leading-relaxed">{info.desc}</p>
                                 </div>
                             </div>
                         ))}
@@ -49,9 +46,9 @@ export default function NewsPage() {
                 {/* Stats Grid */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-16">
                     {[
-                        { label: "Today's Updates", value: "12", icon: "📰", color: "text-red-500", bg: "bg-red-50" },
-                        { label: "Trending Topics", value: "5", icon: "🔥", color: "text-orange-500", bg: "bg-orange-50" },
-                        { label: "Subscribers", value: "50k+", icon: "📧", color: "text-blue-500", bg: "bg-blue-50" },
+                        { label: "Today's Updates", value: "12", icon: "📰", color: "text-blue-500", bg: "bg-blue-50" },
+                        { label: "Trending Topics", value: "5", icon: "🔥", color: "text-purple-500", bg: "bg-purple-50" },
+                        { label: "Subscribers", value: "50k+", icon: "📧", color: "text-indigo-500", bg: "bg-indigo-50" },
                         { label: "Source States", value: "28", icon: "🇮🇳", color: "text-green-500", bg: "bg-green-50" },
                     ].map((stat, i) => (
                         <div key={i} className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4 hover:-translate-y-1 hover:shadow-md transition-all cursor-default group">
@@ -96,7 +93,7 @@ export default function NewsPage() {
                             date: "3 Days Ago",
                             tag: "Health",
                             icon: "🏥",
-                            gradient: "from-red-400 to-rose-500",
+                            gradient: "from-blue-400 to-cyan-500",
                             desc: "New guidelines require ABHA ID linkage for cashless hospitalization claims."
                         },
                         {
@@ -112,11 +109,11 @@ export default function NewsPage() {
                             date: "Last Week",
                             tag: "Startup",
                             icon: "🚀",
-                            gradient: "from-cyan-400 to-blue-500",
+                            gradient: "from-purple-400 to-pink-500",
                             desc: "DPIIT announces one-year extension of the tax holiday for recognized startups."
                         }
                     ].map((news, idx) => (
-                        <div key={idx} className="group bg-white rounded-[2rem] overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl hover:shadow-red-900/5 transition-all duration-300 flex flex-col h-full hover:-translate-y-1">
+                        <div key={idx} className="group bg-white rounded-[2rem] overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl hover:shadow-blue-900/5 transition-all duration-300 flex flex-col h-full hover:-translate-y-1">
                             {/* Card Header */}
                             <div className="h-44 relative overflow-hidden">
                                 <div className={`absolute inset-0 bg-gradient-to-br ${news.gradient} opacity-100 transition-transform duration-700 group-hover:scale-105`}></div>
@@ -126,7 +123,7 @@ export default function NewsPage() {
                                     <span className="bg-white/20 backdrop-blur-md text-white text-[10px] font-bold px-3 py-1.5 rounded-full border border-white/20 uppercase tracking-wider shadow-sm">
                                         {news.tag}
                                     </span>
-                                    <span className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white border border-white/20 shadow-sm text-xl group-hover:bg-white group-hover:text-red-600 transition-colors">
+                                    <span className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white border border-white/20 shadow-sm text-xl group-hover:bg-white group-hover:text-blue-600 transition-colors">
                                         {news.icon}
                                     </span>
                                 </div>
@@ -139,7 +136,7 @@ export default function NewsPage() {
 
                             <div className="p-7 flex-1 flex flex-col -mt-6 relative z-10">
                                 <div className="bg-white rounded-t-3xl pt-2">
-                                    <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-red-600 transition-colors line-clamp-2 leading-tight">
+                                    <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors line-clamp-2 leading-tight">
                                         {news.title}
                                     </h3>
                                     <p className="text-gray-500 text-sm mb-5 line-clamp-2 leading-relaxed">
@@ -151,7 +148,7 @@ export default function NewsPage() {
                                     <button className="text-sm font-bold text-gray-500 hover:text-gray-900 transition-colors">
                                         Read More
                                     </button>
-                                    <button className="w-11 h-11 rounded-full bg-white/40 backdrop-blur-md border border-gray-200 flex items-center justify-center text-red-600 shadow-lg shadow-red-500/10 hover:bg-red-600 hover:text-white hover:border-red-500 transition-all group-hover:scale-110 group-hover:-rotate-45">
+                                    <button className="w-11 h-11 rounded-full bg-white/40 backdrop-blur-md border border-gray-200 flex items-center justify-center text-blue-600 shadow-lg shadow-blue-500/10 hover:bg-blue-600 hover:text-white hover:border-blue-500 transition-all group-hover:scale-110 group-hover:-rotate-45">
                                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-4 4m4-4H3" /></svg>
                                     </button>
                                 </div>
