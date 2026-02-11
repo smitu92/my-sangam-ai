@@ -1,19 +1,33 @@
 
 import { db } from "@/db";
 import { schemes } from "@/db/schemas/scheme";
-import { desc, eq, count } from "drizzle-orm";
+import { desc, eq, count, and, or, ilike } from "drizzle-orm";
 import { NextResponse } from "next/server";
 
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
+    const search = searchParams.get("search");
     const category = searchParams.get("category");
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "6");
     const offset = (page - 1) * limit;
 
     // 1. Build where clause
-    const whereClause = category && category !== "All" ? eq(schemes.category, category) : undefined;
+    const conditions = [];
+    if (category && category !== "All") {
+        conditions.push(eq(schemes.category, category));
+    }
+    if (search) {
+        conditions.push(
+            or(
+                ilike(schemes.title, `%${search}%`),
+                ilike(schemes.description, `%${search}%`)
+            )
+        );
+    }
+    
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
     // 2. Get total count for pagination
     const totalResult = await db.select({ value: count() }).from(schemes).where(whereClause);

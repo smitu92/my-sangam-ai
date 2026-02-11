@@ -104,16 +104,17 @@ export async function GET(req: Request) {
             // Only suggest if score is actually boosted (don't show random general schemes as "Recommended")
             .filter(s => s.matchScore > 50) 
             .sort((a, b) => b.matchScore - a.matchScore)
-            .slice(0, 3);
+            .slice(0, 20);
 
         if (rankedCandidates.length === 0) return NextResponse.json([]);
 
-        // 3. AI Insights
-        const reasons = await AIService.generateReasons(userProfile, rankedCandidates);
+        // 3. AI Insights (Disabled for performance)
+        // const reasons = await AIService.generateReasons(userProfile, rankedCandidates);
         
         const finalResults = rankedCandidates.map(s => ({
             ...s,
-            matchReason: reasons[s.id] || "Your profile strongly aligns with the objectives of this specialized scheme."
+            // matchReason: reasons[s.id] || "Your profile strongly aligns with the objectives of this specialized scheme."
+             matchReason: "Your profile strongly aligns with the objectives of this specialized scheme."
         }));
 
         return NextResponse.json(finalResults);

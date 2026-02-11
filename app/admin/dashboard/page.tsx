@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 export default function AdminDashboard() {
-    const { user, loading } = useAuth();
+    const { user, loading, logout } = useAuth();
     const router = useRouter();
     const [stats, setStats] = useState({
         users: 0,
@@ -44,113 +44,164 @@ export default function AdminDashboard() {
     }
 
     return (
-        <main className="min-h-screen bg-slate-900 text-white">
-            {/* Sidebar (Mobile Hidden) */}
-            <div className="fixed left-0 top-0 bottom-0 w-64 bg-slate-800 border-r border-slate-700 hidden md:flex flex-col p-6">
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent mb-10">
-                    Sangam Admin
-                </h1>
+        <main className="min-h-screen bg-[#f3f0e9] text-gray-900 font-sans flex">
+            {/* Sidebar */}
+            <aside className="fixed left-0 top-0 bottom-0 w-72 bg-[#111111] text-white hidden md:flex flex-col border-r border-white/5 z-50">
+                <div className="p-8 pb-4">
+                    <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
+                        <span className="w-8 h-8 rounded-lg bg-white text-black flex items-center justify-center text-lg">🏛️</span>
+                        Sangam Admin
+                    </h1>
+                </div>
 
-                <nav className="space-y-2 flex-1">
-                    <Link href="/admin/dashboard" className="block px-4 py-3 bg-blue-600 rounded-xl font-bold text-white shadow-lg shadow-blue-500/20">Dashboard</Link>
-                    <Link href="/admin/schemes/add" className="block px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-700/50 rounded-xl transition-colors font-medium">Add New Scheme ➕</Link>
-                    <Link href="/schemes" className="block px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-700/50 rounded-xl transition-colors font-medium">View All Schemes</Link>
-                    <a href="#" className="block px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-700/50 rounded-xl transition-colors font-medium">User Applications</a>
-                    <a href="#" className="block px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-700/50 rounded-xl transition-colors font-medium">Settings</a>
+                <nav className="flex-1 px-4 space-y-2 mt-4">
+                    <div className="px-4 py-2 text-xs font-bold text-gray-500 uppercase tracking-widest">Main Menu</div>
+                    <Link href="/admin/dashboard" className="flex items-center gap-3 px-4 py-3 bg-white/10 text-white rounded-xl font-bold shadow-lg ring-1 ring-white/10">
+                        <span>📊</span> Dashboard
+                    </Link>
+                    <Link href="/admin/schemes/add" className="flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition-all font-medium">
+                        <span>✨</span> Add New Scheme
+                    </Link>
+                    <Link href="/schemes" className="flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition-all font-medium">
+                        <span>📑</span> View All Schemes
+                    </Link>
+                    <Link href="/loans" className="flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition-all font-medium">
+                        <span>💸</span> Loans Management
+                    </Link>
                 </nav>
 
-                <div className="pt-6 border-t border-slate-700">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-300 font-bold">
+                <div className="p-6 border-t border-white/10 bg-black/20">
+                    <div className="flex items-center gap-4 mb-4">
+                        <div className="w-10 h-10 rounded-full bg-indigo-500 flex items-center justify-center text-white font-bold border-2 border-white/10">
                             {user?.name?.charAt(0).toUpperCase() || 'A'}
                         </div>
-                        <div>
-                            <div className="font-bold text-sm truncate max-w-[150px]">{user?.name}</div>
-                            <div className="text-xs text-slate-500">Super Admin</div>
+                        <div className="overflow-hidden">
+                            <div className="font-bold text-sm truncate text-white">{user?.name}</div>
+                            <div className="text-xs text-green-400 flex items-center gap-1">
+                                <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span>
+                                Online
+                            </div>
                         </div>
                     </div>
+                    <button
+                        onClick={() => logout()}
+                        className="w-full py-2.5 px-4 bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-2"
+                    >
+                        <span>🔒</span> Logout Securely
+                    </button>
                 </div>
-            </div>
+            </aside>
 
             {/* Main Content */}
-            <div className="md:ml-64 p-8">
-                <header className="flex justify-between items-center mb-10">
-                    <h2 className="text-3xl font-bold">Dashboard Overview</h2>
-                    <div className="flex gap-4">
-                        <Link href="/admin/schemes/add" className="hidden md:inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-lg font-bold transition-all shadow-lg shadow-blue-600/20 hover:scale-105">
-                            <span>+</span> Add New Scheme
-                        </Link>
-                        <button className="md:hidden p-2 bg-slate-800 rounded-lg">Menu</button>
+            <div className="flex-1 md:ml-72 p-8 lg:p-12">
+                <header className="flex justify-between items-end mb-12">
+                    <div>
+                        <h2 className="text-4xl font-[900] text-gray-900 tracking-tight leading-none mb-2">Overview</h2>
+                        <p className="text-gray-500 font-medium">Welcome back, Administrator.</p>
                     </div>
+                    <Link href="/admin/schemes/add" className="hidden md:inline-flex items-center gap-2 bg-gray-900 hover:bg-black text-white px-6 py-3 rounded-xl font-bold transition-all shadow-xl hover:shadow-2xl hover:-translate-y-1">
+                        <span>+</span> Create New Scheme
+                    </Link>
                 </header>
 
                 {/* Stats Grid */}
-                <div className="grid md:grid-cols-3 gap-6 mb-10">
-                    {/* Stat 1 */}
-                    <div className="bg-slate-800 p-6 rounded-2xl border border-slate-700 relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/10 rounded-full -mr-10 -mt-10 blur-xl group-hover:bg-blue-500/20 transition-all"></div>
+                <div className="grid md:grid-cols-3 gap-8 mb-12">
+                    {/* Stat Card 1 */}
+                    <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 relative overflow-hidden group hover:shadow-md transition-all">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform duration-500"></div>
                         <div className="relative z-10">
-                            <div className="text-slate-400 font-bold text-xs uppercase tracking-wider mb-2">Total Users</div>
-                            <div className="text-4xl font-black text-white">
+                            <div className="flex items-center gap-3 mb-4">
+                                <span className="p-3 bg-indigo-100 text-indigo-600 rounded-2xl text-xl">👥</span>
+                                <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Total Users</span>
+                            </div>
+                            <div className="text-5xl font-black text-gray-900 tracking-tight mb-2">
                                 {loadingStats ? '...' : stats.users.toLocaleString()}
                             </div>
-                            <div className="mt-4 flex items-center text-sm text-green-400">
-                                <span className="bg-green-500/20 px-1.5 py-0.5 rounded mr-2">Registered</span> Platform Wide
+                            <div className="text-sm font-medium text-green-600 bg-green-50 inline-block px-2 py-1 rounded-lg">
+                                +12% this week
                             </div>
                         </div>
                     </div>
 
-                    {/* Stat 2 */}
-                    <div className="bg-slate-800 p-6 rounded-2xl border border-slate-700 relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 w-24 h-24 bg-purple-500/10 rounded-full -mr-10 -mt-10 blur-xl group-hover:bg-purple-500/20 transition-all"></div>
+                    {/* Stat Card 2 */}
+                    <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 relative overflow-hidden group hover:shadow-md transition-all">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform duration-500"></div>
                         <div className="relative z-10">
-                            <div className="text-slate-400 font-bold text-xs uppercase tracking-wider mb-2">Active Schemes</div>
-                            <div className="text-4xl font-black text-white">
+                            <div className="flex items-center gap-3 mb-4">
+                                <span className="p-3 bg-blue-100 text-blue-600 rounded-2xl text-xl">📜</span>
+                                <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Active Schemes</span>
+                            </div>
+                            <div className="text-5xl font-black text-gray-900 tracking-tight mb-2">
                                 {loadingStats ? '...' : stats.schemes.toLocaleString()}
                             </div>
-                            <div className="mt-4 flex items-center text-sm text-blue-400">
-                                <span className="bg-blue-500/20 px-1.5 py-0.5 rounded mr-2">Live</span> Now Available
+                            <div className="text-sm font-medium text-gray-500">
+                                Across 8 Categories
                             </div>
                         </div>
                     </div>
 
-                    {/* Stat 3 */}
-                    <div className="bg-slate-800 p-6 rounded-2xl border border-slate-700 relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 w-24 h-24 bg-orange-500/10 rounded-full -mr-10 -mt-10 blur-xl group-hover:bg-orange-500/20 transition-all"></div>
+                    {/* Stat Card 3 */}
+                    <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 relative overflow-hidden group hover:shadow-md transition-all">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-orange-50 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform duration-500"></div>
                         <div className="relative z-10">
-                            <div className="text-slate-400 font-bold text-xs uppercase tracking-wider mb-2">Inactive / Closed</div>
-                            <div className="text-4xl font-black text-white">
+                            <div className="flex items-center gap-3 mb-4">
+                                <span className="p-3 bg-orange-100 text-orange-600 rounded-2xl text-xl">⚠️</span>
+                                <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Pending Review</span>
+                            </div>
+                            <div className="text-5xl font-black text-gray-900 tracking-tight mb-2">
                                 {loadingStats ? '...' : stats.pending.toLocaleString()}
                             </div>
-                            <div className="mt-4 flex items-center text-sm text-orange-400">
-                                Requires attention
+                            <div className="text-sm font-medium text-orange-600 bg-orange-50 inline-block px-2 py-1 rounded-lg">
+                                Needs Attention
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Recent Applications (Mock) */}
-                <div className="bg-slate-800 border border-slate-700 rounded-2xl overflow-hidden">
-                    <div className="p-6 border-b border-slate-700 flex justify-between items-center bg-slate-800/50">
-                        <h3 className="font-bold text-lg">Recent Applications</h3>
-                        <button className="text-sm text-blue-400 hover:text-blue-300 font-bold">View All</button>
-                    </div>
-                    <div className="divide-y divide-slate-700">
-                        {[1, 2, 3, 4, 5].map((item) => (
-                            <div key={item} className="p-4 hover:bg-slate-700/30 transition-colors flex items-center justify-between">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center font-bold text-sm">U{item}</div>
+                {/* Content Area */}
+                <div className="grid lg:grid-cols-2 gap-8">
+                    <div className="bg-white border border-gray-100 rounded-3xl p-8 shadow-sm">
+                        <div className="flex justify-between items-center mb-8">
+                            <h3 className="font-bold text-xl text-gray-900">Recent Activity</h3>
+                            <button className="text-sm font-bold text-indigo-600 hover:text-indigo-700">View Log</button>
+                        </div>
+                        <div className="space-y-6">
+                            {[1, 2, 3].map((i) => (
+                                <div key={i} className="flex items-center gap-4 pb-6 border-b border-gray-50 last:border-0 last:pb-0">
+                                    <div className="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center text-lg">
+                                        {i === 1 ? '📝' : i === 2 ? '👤' : '🔔'}
+                                    </div>
                                     <div>
-                                        <div className="font-bold text-sm">User Name {item}</div>
-                                        <div className="text-xs text-slate-400">Applied for PM Kisan Yojana</div>
+                                        <div className="font-bold text-gray-900">New Scheme Draft Created</div>
+                                        <div className="text-sm text-gray-400 font-medium">By Admin User • 2 hours ago</div>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-4">
-                                    <span className="text-xs text-slate-500">2 hours ago</span>
-                                    <button className="px-3 py-1 text-xs font-bold bg-slate-700 hover:bg-slate-600 rounded-lg transition-colors">Review</button>
-                                </div>
-                            </div>
-                        ))}
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="bg-[#111111] text-white rounded-3xl p-8 shadow-2xl relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-600/20 rounded-full blur-3xl -mr-20 -mt-20"></div>
+
+                        <h3 className="font-bold text-xl mb-4 relative z-10">Quick Actions</h3>
+                        <div className="grid grid-cols-2 gap-4 relative z-10">
+                            <button className="bg-white/10 hover:bg-white/20 p-4 rounded-2xl text-left transition-colors">
+                                <div className="text-2xl mb-2">📢</div>
+                                <div className="font-bold text-sm">Post Update</div>
+                            </button>
+                            <button className="bg-white/10 hover:bg-white/20 p-4 rounded-2xl text-left transition-colors">
+                                <div className="text-2xl mb-2">🔍</div>
+                                <div className="font-bold text-sm">Audit Log</div>
+                            </button>
+                            <button className="bg-white/10 hover:bg-white/20 p-4 rounded-2xl text-left transition-colors">
+                                <div className="text-2xl mb-2">⚙️</div>
+                                <div className="font-bold text-sm">Settings</div>
+                            </button>
+                            <button className="bg-white/10 hover:bg-white/20 p-4 rounded-2xl text-left transition-colors">
+                                <div className="text-2xl mb-2">❓</div>
+                                <div className="font-bold text-sm">Support</div>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>

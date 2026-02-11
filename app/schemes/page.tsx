@@ -31,10 +31,12 @@ interface Scheme {
 export default function SchemesPage() {
     const { user } = useAuth();
     const [schemes, setSchemes] = useState<Scheme[]>([]);
+    const [allRecommendations, setAllRecommendations] = useState<Scheme[]>([]);
     const [recommendations, setRecommendations] = useState<Scheme[]>([]);
     const [loading, setLoading] = useState(true);
     const [recLoading, setRecLoading] = useState(false);
     const [activeCategory, setActiveCategory] = useState<string>("All");
+    const [searchQuery, setSearchQuery] = useState("");
     const schemesSectionRef = useRef<HTMLDivElement>(null);
 
     // Pagination state
@@ -51,7 +53,8 @@ export default function SchemesPage() {
                 const query = new URLSearchParams({
                     category: activeCategory !== "All" ? activeCategory : "",
                     page: currentPage.toString(),
-                    limit: limit.toString()
+                    limit: limit.toString(),
+                    search: searchQuery
                 });
                 const res = await fetch(`/api/schemes?${query.toString()}`);
                 const data = await res.json();
@@ -68,22 +71,42 @@ export default function SchemesPage() {
         };
 
         fetchSchemes();
-    }, [activeCategory, currentPage]);
+    }, [activeCategory, currentPage, searchQuery]);
 
-    // Fetch Recommendations
+    // Randomize 3 schemes from the pool
+    const rotateRecommendations = useCallback(() => {
+        if (allRecommendations.length === 0) return;
+
+        setRecLoading(true);
+        // Simulate a small delay for better UX (so user sees the refresh happen)
+        setTimeout(() => {
+            const shuffled = [...allRecommendations].sort(() => 0.5 - Math.random());
+            setRecommendations(shuffled.slice(0, 3));
+            setRecLoading(false);
+        }, 400);
+    }, [allRecommendations]);
+
+    // Fetch Recommendations (Pool of 20)
     const fetchRecommendations = useCallback(async (forceRefresh = false) => {
         if (!user?.id) return;
 
-        const cacheKey = `recs_${user.id}`;
+        setRecLoading(true);
+        // Artificial Delay for UX (10 seconds) - Ensure this runs every time
+        await new Promise(resolve => setTimeout(resolve, 10000));
 
+        const cacheKey = `recs_pool_${user.id}`;
+
+        // 1. Try to load from Local Storage first
         if (!forceRefresh) {
             const cachedData = localStorage.getItem(cacheKey);
             if (cachedData) {
                 try {
                     const parsed = JSON.parse(cachedData);
-                    if ((Date.now() - parsed.timestamp) < 3600000) { // 1 hour cache
-                        setRecommendations(parsed.data);
-                        return;
+                    // 24 hour cache for the pool
+                    if ((Date.now() - parsed.timestamp) < 86400000) {
+                        setAllRecommendations(parsed.data);
+                        setRecLoading(false);
+                        return; // Found in cache
                     }
                 } catch (e) {
                     localStorage.removeItem(cacheKey);
@@ -91,14 +114,15 @@ export default function SchemesPage() {
             }
         }
 
-        setRecLoading(true);
+        // 2. Fetch from API if no cache or force refresh
         try {
-            const res = await fetch("/api/schemes/recommend"); // Assuming this endpoint exists based on previous logic
+            const res = await fetch("/api/schemes/recommend");
             if (res.ok) {
                 const data = await res.json();
-                setRecommendations(data || []);
+                const pool = data || [];
+                setAllRecommendations(pool);
                 localStorage.setItem(cacheKey, JSON.stringify({
-                    data: data,
+                    data: pool,
                     timestamp: Date.now()
                 }));
             }
@@ -109,9 +133,30 @@ export default function SchemesPage() {
         }
     }, [user?.id]);
 
+    // Initial Load
     useEffect(() => {
         fetchRecommendations();
     }, [fetchRecommendations]);
+
+    // Whenever we have a new pool of recommendations, rotate to show 3
+    useEffect(() => {
+        if (allRecommendations.length > 0) {
+            // Only rotate if we don't have recommendations shown yet OR if we just fetched a new pool
+            // Actually, we want to rotate on mount if we have data.
+            // Since allRecommendations is set on mount (from cache or api), this will trigger.
+            // But we don't want to infinite loop.
+            // Let's just check if recommendations is empty?
+            // No, because user might want to refresh.
+            // The rotateRecommendations function relies on allRecommendations.
+
+            // If recommendations are empty, definitely rotate.
+            if (recommendations.length === 0) {
+                // Inline rotation to avoid double-loading state
+                const shuffled = [...allRecommendations].sort(() => 0.5 - Math.random());
+                setRecommendations(shuffled.slice(0, 3));
+            }
+        }
+    }, [allRecommendations, recommendations.length]);
 
     const categoryList = [
         { name: "All", label: "All Schemes", icon: LayoutGrid },
@@ -186,20 +231,7 @@ export default function SchemesPage() {
                         AI-powered matching ensures you never miss a benefit.
                     </p>
 
-                    {/* Search Bar Visual */}
-                    <div className="max-w-2xl mx-auto relative group">
-                        <div className="relative bg-[#1a1a1a] border border-white/10 rounded-2xl p-2 flex items-center shadow-2xl">
-                            <Search className="w-6 h-6 text-gray-400 ml-4" />
-                            <input
-                                type="text"
-                                placeholder="Search for schemes (e.g. 'Student Scholarship')..."
-                                className="w-full bg-transparent border-none focus:ring-0 text-white placeholder-gray-500 px-4 py-3 text-lg"
-                            />
-                            <button className="bg-white text-black px-6 py-3 rounded-xl font-bold hover:bg-gray-200 transition-colors">
-                                Search
-                            </button>
-                        </div>
-                    </div>
+
                 </div>
             </section>
 
@@ -212,7 +244,7 @@ export default function SchemesPage() {
                             <div className="flex items-center gap-3">
                                 <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Recommended for You</h2>
                                 <button
-                                    onClick={() => fetchRecommendations(true)}
+                                    onClick={rotateRecommendations}
                                     disabled={recLoading}
                                     title="Refresh AI Recommendations"
                                     className={`p-1.5 rounded-lg bg-white hover:bg-gray-50 border border-gray-200 transition-all text-gray-400 hover:text-gray-900 ${recLoading ? 'animate-spin' : ''}`}
@@ -238,9 +270,7 @@ export default function SchemesPage() {
                                         <div className="relative z-10">
                                             <div className="flex justify-between items-start mb-4">
                                                 <span className="text-[10px] font-bold text-gray-600 bg-gray-100 px-2.5 py-1 rounded border border-gray-200 uppercase tracking-wider">{scheme.category}</span>
-                                                <div className="bg-gray-900 text-white text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5">
-                                                    {scheme.matchScore || 95}% Match
-                                                </div>
+
                                             </div>
                                             <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-1 group-hover:underline decoration-2 underline-offset-4">{scheme.title}</h3>
                                             <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 mb-6">
@@ -294,6 +324,33 @@ export default function SchemesPage() {
                                 </button>
                             );
                         })}
+                    </div>
+                </div>
+
+                {/* Moved Search Bar */}
+                <div className="mb-12">
+                    <div className="relative max-w-2xl mx-auto group">
+                        <div className="relative bg-white border-2 border-gray-100 rounded-2xl p-2 flex items-center shadow-lg hover:shadow-xl hover:border-gray-200 transition-all">
+                            <Search className="w-6 h-6 text-gray-400 ml-4" />
+                            <input
+                                type="text"
+                                placeholder="Search for schemes (e.g. 'Student Scholarship')..."
+                                className="w-full bg-transparent border-none focus:ring-0 text-gray-900 placeholder-gray-400 px-4 py-3 text-lg font-medium"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                        setCurrentPage(1);
+                                    }
+                                }}
+                            />
+                            <button
+                                onClick={() => setCurrentPage(1)}
+                                className="bg-gray-900 text-white px-8 py-3 rounded-xl font-bold hover:bg-gray-800 transition-colors shadow-lg shadow-gray-900/20"
+                            >
+                                Search
+                            </button>
+                        </div>
                     </div>
                 </div>
 
