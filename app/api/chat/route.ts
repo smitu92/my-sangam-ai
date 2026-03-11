@@ -22,7 +22,7 @@ export async function POST(req: Request) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'mistral',
+        model: process.env.AI_MODEL || 'phi3:mini',
         messages: [
           {
             role: 'system',

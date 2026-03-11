@@ -1,5 +1,6 @@
 
-const OLLAMA_API_URL = 'http://localhost:11434/api';
+const OLLAMA_API_URL = process.env.OLLAMA_URL || 'http://localhost:11434';
+const DEFAULT_MODEL = process.env.AI_MODEL || 'phi3:mini';
 
 export interface AIResponse {
     response: string;
@@ -19,9 +20,9 @@ export interface RankedScheme {
 }
 
 export class AIService {
-    private static async queryOllama(prompt: string, model: string = 'mistral', format?: 'json'): Promise<string> {
+    private static async queryOllama(prompt: string, model: string = DEFAULT_MODEL, format?: 'json'): Promise<string> {
         try {
-            const response = await fetch(`${OLLAMA_API_URL}/generate`, {
+            const response = await fetch(`${OLLAMA_API_URL}/api/generate`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -71,7 +72,7 @@ export class AIService {
         `;
 
         try {
-            const responseText = await this.queryOllama(prompt, 'mistral', 'json');
+            const responseText = await this.queryOllama(prompt, DEFAULT_MODEL, 'json');
             // Clean up potentially messy JSON response from LLM
             const cleanJson = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
             return JSON.parse(cleanJson);
@@ -121,9 +122,9 @@ export class AIService {
         `;
 
         try {
-            const responseText = await this.queryOllama(prompt, 'mistral', 'json');
-             // Clean up potentially messy JSON response from LLM
-             const cleanJson = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
+            const responseText = await this.queryOllama(prompt, DEFAULT_MODEL, 'json');
+            // Clean up potentially messy JSON response from LLM
+            const cleanJson = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
             return JSON.parse(cleanJson);
         } catch (e) {
             console.error('Ranking failed:', e);
@@ -158,12 +159,49 @@ export class AIService {
         `;
 
         try {
-            const responseText = await this.queryOllama(prompt, 'mistral', 'json');
+            const responseText = await this.queryOllama(prompt, DEFAULT_MODEL, 'json');
             const cleanJson = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
             return JSON.parse(cleanJson);
         } catch (e) {
             console.error('Reason generation failed:', e);
             return {};
+        }
+    }
+
+    /**
+     * Smart Search: Understands natural language queries and extracts search parameters.
+     * e.g. "schemes for post graduation student" → { keywords: ["scholarship", "education"], category: "Education" }
+     */
+    static async smartSearch(query: string): Promise<{
+        keywords: string[];
+        category: string;
+        targetGroup: string;
+    }> {
+        const prompt = `
+        Analyze this search query about Indian government schemes: "${query}"
+        
+        Extract:
+        1. "keywords" - relevant search terms to find matching schemes (max 5 words)
+        2. "category" - ONE best matching category from: Agriculture, Education, Healthcare, Business, Housing, Finance, Social Welfare, or "All"
+        3. "targetGroup" - who is this for (e.g. "students", "farmers", "women", "senior citizens", "entrepreneurs")
+        
+        Output strictly as JSON:
+        {
+            "keywords": ["keyword1", "keyword2"],
+            "category": "Education",
+            "targetGroup": "students"
+        }
+        `;
+
+        try {
+            const responseText = await this.queryOllama(prompt, DEFAULT_MODEL, 'json');
+            const cleanJson = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
+            const result = JSON.parse(cleanJson);
+            console.log('🔍 AI Smart Search parsed:', result);
+            return result;
+        } catch (e) {
+            console.error('Smart search failed:', e);
+            return { keywords: [query], category: 'All', targetGroup: '' };
         }
     }
 }

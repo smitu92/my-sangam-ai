@@ -29,7 +29,7 @@ export async function GET(req: Request) {
                 userAge--;
             }
         }
-        
+
         const userIncome = userProfile.income ? parseFloat(userProfile.income.replace(/[^0-9.]/g, '')) : 0;
         const userOccupation = (userProfile.occupation || '').toLowerCase();
         const userGender = userProfile.gender || 'All';
@@ -38,7 +38,7 @@ export async function GET(req: Request) {
 
         // 1. Fetch Candidates (Basic filter)
         let candidates = await db.select().from(schemes).where(eq(schemes.status, 'active'));
-        
+
         // 2. High Precision Scoring
         const rankedCandidates = candidates
             .filter(s => {
@@ -82,7 +82,7 @@ export async function GET(req: Request) {
                     else if (userOccupation.includes('entrepreneur') && schemeCat.includes('business')) score += 30;
                     else if (userOccupation.includes('business') && schemeCat.includes('business')) score += 30;
                     else if (userOccupation.includes('startup') && schemeCat.includes('business')) score += 30;
-                    
+
                     // Minor boost for keyword in title/tags (+10)
                     if (schemeTitle.includes(userOccupation)) score += 10;
                     if (s.tags?.some(t => t.toLowerCase().includes(userOccupation))) score += 10;
@@ -102,19 +102,31 @@ export async function GET(req: Request) {
                 return { ...s, matchScore: parseFloat(finalScore.toFixed(1)) };
             })
             // Only suggest if score is actually boosted (don't show random general schemes as "Recommended")
-            .filter(s => s.matchScore > 50) 
+            .filter(s => s.matchScore > 50)
             .sort((a, b) => b.matchScore - a.matchScore)
             .slice(0, 20);
 
         if (rankedCandidates.length === 0) return NextResponse.json([]);
 
-        // 3. AI Insights (Disabled for performance)
-        // const reasons = await AIService.generateReasons(userProfile, rankedCandidates);
-        
+        // 3. AI-Powered Insights (toggle via USE_AI env var)
+        let reasons: Record<string, string> = {};
+        const useAI = process.env.USE_AI === 'true';
+
+        if (useAI) {
+            try {
+                console.log('🤖 AI Mode: Generating personalized scheme reasons...');
+                reasons = await AIService.generateReasons(userProfile, rankedCandidates);
+                console.log(`✅ AI generated reasons for ${Object.keys(reasons).length} schemes`);
+            } catch (aiError) {
+                console.error('⚠️ AI failed, falling back to logic mode:', aiError);
+            }
+        } else {
+            console.log('⚙️ Logic Mode: Using rule-based recommendations (USE_AI=false)');
+        }
+
         const finalResults = rankedCandidates.map(s => ({
             ...s,
-            // matchReason: reasons[s.id] || "Your profile strongly aligns with the objectives of this specialized scheme."
-             matchReason: "Your profile strongly aligns with the objectives of this specialized scheme."
+            matchReason: reasons[s.id] || "Your profile strongly aligns with the objectives of this specialized scheme."
         }));
 
         return NextResponse.json(finalResults);

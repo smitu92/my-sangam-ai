@@ -4,9 +4,13 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "go": "NODE_TLS_REJECT_UNAUTHORIZED=0 next dev",
+    "start": "NODE_TLS_REJECT_UNAUTHORIZED=0 next dev",
     "build": "next build",
-    "start": "next start",
-    "lint": "eslint"
+    "prod": "next start",
+    "lint": "eslint",
+    "db:push": "npx drizzle-kit push",
+    "db:seed": "npx tsx scripts/seed-schemes.ts"
   },
   "dependencies": {
     "@types/bcryptjs": "^2.4.6",
