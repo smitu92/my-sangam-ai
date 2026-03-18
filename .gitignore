@@ -50,3 +50,25 @@ next-env.d.ts
 
 # Editor
 DataClearning/.vscode/
+
+
+
+# Python
+DataClearning/venv/
+DataClearning/.env
+DataClearning/__pycache__/
+
+*.pyc
+
+# Data & heavy files
+
+
+
+# Next.js
+node_modules/
+.next/
+.env.local
+
+# Misc
+.DS_Store
+*.log
