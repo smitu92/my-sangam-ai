@@ -33,11 +33,15 @@
 
 // prisma/seed.ts — clean version
 import dotenv from "dotenv"
-// dotenv.config({ path: "../.env" })  // path relative to prisma/ folder
-dotenv.config()
+import path from "path"
 
+
+dotenv.config({ path: path.join(process.cwd(), "../.env") }) // dotenv.config({ path: "../.env" })  // path relative to prisma/ folder
+console.log(process.env.DATABASE_URL)
+console.log(path.resolve(__dirname, "../.env"))
 import { PrismaClient } from "../lib/generated/prisma/client"
 import { PrismaPg } from "@prisma/adapter-pg"
+
 
 const adapter = new PrismaPg({
     connectionString: process.env.DATABASE_URL
@@ -47,3 +51,37 @@ const adapter = new PrismaPg({
 const prisma = new PrismaClient({ adapter })
 
 export default prisma
+
+
+/* quick revision
+what is prisma?
+   it is an ORM (Object-Relational Mapping) library for TypeScript and JavaScript.
+   it is used to interact with databases in a type-safe manner.
+   but have in-buillt engine to convert code of typescript to sql queries instead of using database-drive like pg 
+
+why here we are using PrismaPg?
+    reason behind this ,latest version of prisma does not support prisma's own rust engine ,also some server like cloudnery does not support prisma's own rust engine 
+
+
+to create new prisma project we use this command
+    npx prisma init
+    npx prisma generate
+
+    these are typescripts commands
+    npm install @types/pg
+    npm install pg  
+    npm install @prisma/adapter-pg
+    npm install @prisma/client
+    npm install tsx
+
+usecase:
+    use of tsx is to run the typescript file 
+
+    pg-client is used to create connection between prisma and postgresql database
+
+these command to work with postsqls database
+    npx prisma db push
+    npx prisma db seed
+
+
+*/

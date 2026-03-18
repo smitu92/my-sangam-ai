@@ -12,11 +12,20 @@ datasource db {
   provider = "postgresql"
 }
 
-model Schemes {
-  id            Int      @id @default(autoincrement())
-  details       String
-  released_date DateTime
-  level         String
-  eligibilty    String
-  age           Int
+model Scheme {
+  id             Int     @id @default(autoincrement())
+  scheme_name    String
+  details        String? @db.Text
+  benefits       String? @db.Text
+  eligibility    String? @db.Text
+  application    String? @db.Text
+  documents      String? @db.Text
+  level          String?
+  schemeCategory String?
+  tags           String?
+  full_text      String? @db.Text
+
+  @@map("schemes")
 }
+
+// we can have different files for other models in same folder with base
