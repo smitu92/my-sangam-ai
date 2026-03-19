@@ -3,22 +3,25 @@ import type { NextRequest } from "next/server";
 import { updateSession, decrypt } from "@/lib/auth";
 
 export async function middleware(request: NextRequest) {
-  // Update session expiration if it exists
-  const response = await updateSession(request);
-  if (response) return response;
-
-  const session = request.cookies.get("session")?.value;
   const { pathname } = request.nextUrl;
 
-  // Protected Routes (Add more as needed)
-  const protectedRoutes = ["/profile", "/schemes", "/loans", "/categories", "/news"];
-  
-  // Public Routes (Login, Register, Home)
+  // Public Routes (Login, Register, Home) — skip session refresh
   const isPublicRoute = 
     pathname === "/" || 
     pathname.startsWith("/login") || 
     pathname.startsWith("/register") || 
     pathname.startsWith("/api/auth");
+
+  // Only refresh session on non-public routes
+  if (!isPublicRoute) {
+    const response = await updateSession(request);
+    if (response) return response;
+  }
+
+  const session = request.cookies.get("session")?.value;
+
+  // Protected Routes (Add more as needed)
+  const protectedRoutes = ["/profile", "/schemes", "/loans", "/categories", "/news"];
 
   // Admin Routes
   const isAdminRoute = pathname.startsWith("/admin");

@@ -37,6 +37,12 @@ export async function updateSession(request: NextRequest) {
 
   // Refresh expiration on each request so user stays logged in
   const parsed = await decrypt(session);
+  if (!parsed) {
+    // Session cookie exists but is expired/invalid — clear it and move on
+    const res = NextResponse.next();
+    res.cookies.delete("session");
+    return res;
+  }
   parsed.expires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 1 day from now
   const res = NextResponse.next();
   res.cookies.set({

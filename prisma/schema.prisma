@@ -28,4 +28,107 @@ model Scheme {
   @@map("schemes")
 }
 
-// we can have different files for other models in same folder with base
+// Add this to your existing schema.prisma
+
+enum Gender {
+  Male
+  Female
+  Other
+}
+
+enum CasteCategory {
+  General
+  OBC
+  SC
+  ST
+  EWS
+}
+
+enum Occupation {
+  Student
+  Farmer
+  Teacher
+  Researcher
+  Business
+  SmallBusiness
+  DairyFarm
+  JobSeeker
+  SelfEmployed
+  Other
+}
+
+enum RationCard {
+  APL
+  BPL
+  AAY
+  None
+}
+
+enum InstitutionType {
+  Government
+  Private
+  CentralUniversity
+  StateUniversity
+  Other
+}
+
+enum EducationLevel {
+  Below10th
+  Class10th
+  Class12th
+  ITI
+  Diploma
+  Graduate
+  Postgraduate
+  PhD
+  Other
+}
+
+model UserProfile {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Link to your auth user (Supabase)
+  userId String @unique
+
+  // ── Universal ─────────────────────────────────────────────
+  name           String
+  age            Int
+  gender         Gender
+  state          String
+  district       String
+  caste          CasteCategory
+  annualIncome   Int // in rupees
+  disability     Boolean       @default(false)
+  disabilityType String? // if disability = true
+  rationCard     RationCard    @default(None)
+  religion       String?
+
+  // ── Occupation ────────────────────────────────────────────
+  occupation Occupation
+
+  // ── Student / Teacher / Researcher ───────────────────────
+  educationLevel  EducationLevel?
+  institutionType InstitutionType?
+  courseName      String? // e.g. B.Tech CSE, M.Sc Physics
+  yearOfStudy     Int?
+  marksPercentage Float?
+  experienceYears Int? // for Teacher/Researcher
+
+  // ── Farmer / Dairy ────────────────────────────────────────
+  landSizeAcres    Float?
+  landOwnership    Boolean? // true = owns land
+  cropType         String? // wheat, rice, cotton etc
+  irrigationAccess Boolean?
+  animalCount      Int?
+  animalType       String? // cow, buffalo, goat etc
+
+  // ── Business / MSME ──────────────────────────────────────
+  businessType   String? // manufacturing, service, retail
+  gstRegistered  Boolean?
+  msmeRegistered Boolean?
+  udyamNumber    String?
+  employeeCount  Int?
+  annualTurnover Int?
+}
