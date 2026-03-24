@@ -68,3 +68,6 @@ else:
     faiss.write_index(index, FAISS_INDEX_FILE) # saves as faiss.index
 
     print("✅ Embeddings saved! Future runs won't call the API.")
+
+
+

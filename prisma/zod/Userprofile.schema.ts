@@ -27,7 +27,7 @@ const BaseSchema = z.object({
   caste: CasteEnum,
   annualIncome: z.number().int().min(0),
   disability: z.boolean().default(false),
-  disabilityType: z.string().optional(),
+  disabilityType: z.string().nullable().optional(),
   rationCard: RationCardEnum.default("None"),
   religion: z.string().optional(),
   occupation: OccupationEnum,
@@ -94,10 +94,10 @@ export const UserProfileSchema = z.discriminatedUnion("occupation", [
   BaseSchema.extend({ occupation: z.literal("Other") }),
 ]);
 
-export type UserProfile = z.infer<typeof UserProfileSchema>;
+export type UserProfileZ = z.infer<typeof UserProfileSchema>;
 
 // ── Helper: convert profile to plain string for LLM ──────────
-export function profileToString(profile: UserProfile): string {
+export function profileToString(profile: UserProfileZ): string {
   const base = `Name: ${profile.name}, Age: ${profile.age}, Gender: ${profile.gender}, 
 State: ${profile.state}, District: ${profile.district}, 
 Caste: ${profile.caste}, Annual Income: ₹${profile.annualIncome}, 

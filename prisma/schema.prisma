@@ -4,31 +4,34 @@
 // Get a free hosted Postgres database in seconds: `npx create-db`
 
 generator client {
-  provider = "prisma-client"
-  output   = "../lib/generated/prisma"
+  provider        = "prisma-client"
+  output          = "../lib/generated/prisma"
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
-  provider = "postgresql"
+  provider   = "postgresql"
+  extensions = [vector, pg_graphql, pg_stat_statements, pgcrypto, supabase_vault, uuid_ossp(map: "uuid-ossp")]
 }
 
 model Scheme {
-  id             Int     @id @default(autoincrement())
+  id             Int                          @id @default(autoincrement())
   scheme_name    String
-  details        String? @db.Text
-  benefits       String? @db.Text
-  eligibility    String? @db.Text
-  application    String? @db.Text
-  documents      String? @db.Text
+  details        String?                      @db.Text
+  benefits       String?                      @db.Text
+  eligibility    String?                      @db.Text
+  application    String?                      @db.Text
+  documents      String?                      @db.Text
   level          String?
   schemeCategory String?
   tags           String?
-  full_text      String? @db.Text
+  full_text      String?                      @db.Text
+  embedding      Unsupported("vector(3072)")?
 
   @@map("schemes")
 }
 
-// Add this to your existing schema.prisma
+
 
 enum Gender {
   Male
@@ -131,4 +134,28 @@ model UserProfile {
   udyamNumber    String?
   employeeCount  Int?
   annualTurnover Int?
+}
+
+// ── Chat Storage ──────────────────────────────────────────
+model ChatSession {
+  id        String   @id @default(cuid())
+  userId    String   // Supabase auth.users UUID
+  title     String   @default("New Chat")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  messages  ChatMessage[]
+
+  @@map("chat_sessions")
+}
+
+model ChatMessage {
+  id           String      @id @default(cuid())
+  sessionId    String
+  session      ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  role         String      // 'user' | 'assistant'
+  content      String      @db.Text
+  schemesFound Json?       // scheme cards from FastAPI response
+  createdAt    DateTime    @default(now())
+
+  @@map("chat_messages")
 }

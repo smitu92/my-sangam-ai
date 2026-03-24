@@ -26,7 +26,7 @@ Context: {context}"""),
     ("human", "{user_profile}")
 ])
 vectorstore=FAISS.load_local("../data/langchain_faiss", embeddings,allow_dangerous_deserialization=True)
-retriever = vectorstore.as_retriever(search_kwargs={"k": 8})
+retriever = vectorstore.as_retriever(search_kwargs={"k": 8},filter={"level":"Central"})
 question_answer_chain = create_stuff_documents_chain(llm, prompt)
 chain = create_retrieval_chain(retriever, question_answer_chain)
 

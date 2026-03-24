@@ -19,19 +19,12 @@ export default function LoginPage() {
         const password = (form.elements[1] as HTMLInputElement).value;
 
         try {
-            const res = await fetch("/api/auth/login", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, password }),
-            });
-
-            if (!res.ok) {
-                const data = await res.json();
-                throw new Error(data.message || "Login failed");
+            const result = await login(email, password);
+            if (result.error) {
+                throw new Error(result.error);
             }
-
-            const data = await res.json();
-            login(data.user);
+            // Redirect is handled by middleware/auth state change
+            window.location.href = "/profile";
         } catch (err: any) {
             setError(err.message);
         } finally {

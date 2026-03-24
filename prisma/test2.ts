@@ -3,7 +3,7 @@ import prisma from "./seed"
 
 // ✅ wrap in async main function
 async function main() {
-    const scheme = await prisma.schemes.create({   // ← singular 'scheme' not 'schemes'
+    const scheme = await prisma.scheme.create({   // ← singular 'scheme' not 'schemes'
         data: {
             details: "sdfd",
             released_date: new Date(),
