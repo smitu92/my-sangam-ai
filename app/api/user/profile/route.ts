@@ -13,11 +13,27 @@ export async function GET(request: Request) {
             );
         }
 
-        const profile = await prisma.userProfile.findUnique({
+        let profile = await prisma.userProfile.findUnique({
             where: { userId },
         });
 
+        // If not found in UserProfile, check AdminUser table
         if (!profile) {
+            const admin = await prisma.adminUser.findUnique({
+                where: { userId },
+            });
+            
+            if (admin) {
+                // Return a combined object with the admin role
+                return NextResponse.json({ 
+                    profile: { 
+                        ...admin,
+                        name: admin.name,
+                        role: "admin" 
+                    } 
+                }, { status: 200 });
+            }
+
             return NextResponse.json(
                 { message: "Profile not found" },
                 { status: 404 }

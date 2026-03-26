@@ -3,6 +3,7 @@
 import { useAuth } from "@/context/AuthContext";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase/createClient";
 
 export default function AdminLoginPage() {
     const [isLoading, setIsLoading] = useState(false);
@@ -20,27 +21,15 @@ export default function AdminLoginPage() {
         const password = (form.elements[1] as HTMLInputElement).value;
 
         try {
-            const res = await fetch("/api/auth/login", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, password }),
-            });
+            // 1. Authenticate with AuthContext (which uses Supabase)
+            const { error: loginError } = await login(email, password);
 
-            const data = await res.json();
-
-            if (!res.ok) {
-                throw new Error(data.message || "Login failed");
+            if (loginError) {
+                throw new Error(loginError || "Invalid credentials");
             }
 
-            // Check if user is admin
-            if (data.user.role !== "admin") {
-                // If not admin, logout immediately
-                await fetch("/api/auth/logout", { method: "POST" });
-                throw new Error("Access Denied: Not an Administrator");
-            }
-
-            // Call context login with redirect to admin dashboard
-            login(data.user, "/admin/dashboard");
+            // Redirect to admin dashboard
+            router.push("/admin/dashboard");
         } catch (err: any) {
             setError(err.message);
         } finally {

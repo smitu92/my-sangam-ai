@@ -1,8 +1,6 @@
-import { db } from "@/db";
-import { users } from "@/db/schemas/user";
-import { eq } from "drizzle-orm";
+import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
-import bcrypt from "bcryptjs";
+import { adminSupabase } from "@/lib/supabase/adminSupabase";
 
 export async function POST(request: Request) {
   try {
@@ -23,36 +21,42 @@ export async function POST(request: Request) {
       );
     }
 
-    // Check if user already exists
-    const existingUser = await db
-      .select()
-      .from(users)
-      .where(eq(users.email, email))
-      .limit(1);
+    // 1. Create admin via Supabase Admin API (bypasses email confirmation)
+    const { data: authData, error: authError } = await adminSupabase.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true,
+      user_metadata: { name, role: 'admin' }
+    });
 
-    if (existingUser.length > 0) {
+    if (authError) {
+      console.error("Supabase Admin Auth Error:", authError);
       return NextResponse.json(
-        { message: "User already exists with this email" },
-        { status: 409 }
+        { message: authError.message },
+        { status: 400 }
       );
     }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const userId = authData?.user?.id;
+    if (!userId) {
+      return NextResponse.json(
+        { message: "Failed to retrieve user ID from Supabase" },
+        { status: 500 }
+      );
+    }
 
-    // Create Admin User
-    const newUser = await db
-      .insert(users)
-      .values({
+    // 2. Create AdminUser in Prisma
+    const newAdmin = await prisma.adminUser.create({
+      data: {
+        userId,
         email,
         name,
-        password: hashedPassword,
-        role: "admin", // Explicitly set role to admin
-      })
-      .returning();
+        role: "admin",
+      },
+    });
 
     return NextResponse.json(
-      { message: "Admin created successfully", user: newUser[0] },
+      { message: "Admin created successfully", user: { id: newAdmin.id, name: newAdmin.name, role: newAdmin.role } },
       { status: 201 }
     );
   } catch (error) {

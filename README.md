@@ -120,11 +120,9 @@ sangam/
 │   └── requirements.txt          # Python dependencies
 │
 ├── context/                      # Next.js context providers
-├── db/                           # Drizzle DB utilities
 ├── lib/                          # Shared libs (Prisma client, etc.)
 ├── scripts/                      # Misc scripts
 ├── middleware.ts                 # Next.js auth middleware
-├── drizzle.config.ts
 ├── package.json
 ├── tsconfig.json
 └── README.md
@@ -138,7 +136,7 @@ sangam/
 |---|---|
 | Frontend | Next.js (App Router) · TypeScript · Tailwind CSS |
 | Auth & Middleware | Next.js middleware · Session handling |
-| Database | PostgreSQL · Prisma ORM · Drizzle |
+| Database | PostgreSQL · Prisma ORM |
 | ML / RAG Pipeline | Python 3.14 · LangChain · FAISS · Gemini Embedding API |
 | LLM | Gemini 2.0 Flash |
 | Backend AI API | FastAPI · Uvicorn · Pydantic |

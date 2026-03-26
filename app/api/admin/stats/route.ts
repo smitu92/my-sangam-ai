@@ -1,37 +1,48 @@
-import { db } from "@/db";
-import { users } from "@/db/schemas/user";
-import { schemes } from "@/db/schemas/scheme";
-import { getSession } from "@/lib/auth";
+import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
-import { count, eq } from "drizzle-orm"; // Ensure count is available or use raw sql if needed, but for now length is fine for small scale or sql`count(*)`
+import { supabase } from "@/lib/supabase/createClient"; // Or createBrowserClient if server context is tricky, but let's just use the api key or token
 
 export async function GET(req: Request) {
   try {
-    const session = await getSession();
+    // For admin stats, we need to verify the user is an admin.
+    // In a real app we'd pass the token and use createServerClient, or check AdminUser in Prisma.
+    // For simplicity right now, since it's just stats, we'll verify if an admin session header or cookie exists.
+    
+    // We can extract the token from the Authorization header or cookies
+    const authHeader = req.headers.get('Authorization');
+    const token = authHeader?.split(' ')[1] || req.headers.get('cookie')?.split('sb-access-token=')[1]?.split(';')[0];
+    
+    if (!token) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 403 });
+    }
 
-    if (!session || session.role !== "admin") {
+    const { data: { user }, error } = await supabase.auth.getUser(token);
+    
+    if (error || !user) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 403 });
+    }
+
+    // Verify user is in AdminUser table
+    const adminRecord = await prisma.adminUser.findUnique({
+      where: { userId: user.id }
+    });
+
+    if (!adminRecord) {
       return NextResponse.json(
-        { message: "Unauthorized" },
+        { message: "Forbidden - Not an Admin" },
         { status: 403 }
       );
     }
 
-    // Fetch Stats
-    // Note: Drizzle count() usage might vary by version/driver, 
-    // for simplicity in this rapid dev env we can use array length or SQL raw
-    // Let's try simple array selection for now as it's guaranteed to work without complex sql imports
-    
     // 1. Total Users
-    const allUsers = await db.select({ id: users.id }).from(users);
-    const userCount = allUsers.length;
+    const userCount = await prisma.userProfile.count();
 
     // 2. Active Schemes
-    const activeSchemes = await db.select({ id: schemes.id }).from(schemes).where(eq(schemes.status, "active"));
-    const schemeCount = activeSchemes.length;
+    // Using string "active" as status doesn't exist on Scheme right now, but we'll use count
+    const schemeCount = await prisma.scheme.count();
 
-    // 3. Pending/Inactive (Using closed/upcoming schemes as proxy for now)
-    const inactiveSchemes = await db.select({ id: schemes.id }).from(schemes).where(eq(schemes.status, "closed"));
-    const pendingCount = inactiveSchemes.length; // Or we can use this for something else
+    // 3. Pending/Inactive
+    const pendingCount = 0; // Placeholder
 
     return NextResponse.json(
       { 
