@@ -1,6 +1,5 @@
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
-import { AIService } from "@/lib/ai-service";
 
 export async function GET(req: Request) {
   try {
@@ -23,42 +22,10 @@ export async function GET(req: Request) {
     }
 
     if (search) {
-      if (useAI && search.split(' ').length >= 3) {
-        // AI Smart Search Focus
-        try {
-          const aiResult = await AIService.smartSearch(search);
-          const keywordConditions = aiResult.keywords.map((keyword: string) => ({
-             OR: [
-                { scheme_name: { contains: keyword, mode: 'insensitive' } },
-                { details: { contains: keyword, mode: 'insensitive' } },
-                { benefits: { contains: keyword, mode: 'insensitive' } },
-                { eligibility: { contains: keyword, mode: 'insensitive' } }
-             ]
-          }));
-
-          // Always add exact search explicitly
-          keywordConditions.push({
-             OR: [
-                { scheme_name: { contains: search, mode: 'insensitive' } },
-                { details: { contains: search, mode: 'insensitive' } }
-             ]
-          });
-
-          // In Prisma, we use OR for this list of conditions to be broad
-          // Wait, AI keywords usually mean "must match at least one keyword"
-          whereClause.OR = keywordConditions;
-        } catch (error) {
-           whereClause.OR = [
-             { scheme_name: { contains: search, mode: 'insensitive' } },
-             { details: { contains: search, mode: 'insensitive' } }
-           ];
-        }
-      } else {
-        whereClause.OR = [
-           { scheme_name: { contains: search, mode: 'insensitive' } },
-           { details: { contains: search, mode: 'insensitive' } }
-        ];
-      }
+      whereClause.OR = [
+         { scheme_name: { contains: search, mode: 'insensitive' } },
+         { details: { contains: search, mode: 'insensitive' } }
+      ];
     }
 
     const [totalCount, rawSchemes] = await Promise.all([
