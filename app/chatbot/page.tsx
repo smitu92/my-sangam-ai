@@ -5,20 +5,18 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
-/* ── Types ────────────────────────────────────────────────── */
-interface SchemeCard {
-    scheme_id: string;
-    scheme_name: string;
-    level: string;
-    category: string;
-    official_url?: string;
-}
+import ProcessingIndicator from "./components/ProcessingIndicator";
+import MessageRenderer from "./components/MessageRenderer";
+import { formatAssistantMessage, type ContentBlock, type SchemeCardData } from "./lib/formatMessage";
 
+/* ── Types ────────────────────────────────────────────────── */
 interface Message {
     id?: string;
     role: "user" | "assistant";
     content: string;
-    schemesFound?: SchemeCard[];
+    blocks: ContentBlock[];
+    responseType?: "SCHEME" | "GENERAL" | "OFF_TOPIC";
+    schemesFound?: SchemeCardData[];
     createdAt?: string;
 }
 
@@ -102,13 +100,23 @@ export default function ChatbotPage() {
             if (res.ok) {
                 const data = await res.json();
                 setMessages(
-                    data.session.messages.map((m: any) => ({
-                        id: m.id,
-                        role: m.role,
-                        content: m.content,
-                        schemesFound: m.schemesFound,
-                        createdAt: m.createdAt,
-                    }))
+                    data.session.messages.map((m: any) => {
+                        const schemesFound = m.schemesFound || [];
+                        const responseType = schemesFound.length > 0 ? "SCHEME" : "GENERAL";
+                        const blocks: ContentBlock[] =
+                            m.role === "user"
+                                ? [{ type: "text" as const, content: m.content }]
+                                : formatAssistantMessage(m.content, responseType, schemesFound);
+                        return {
+                            id: m.id,
+                            role: m.role,
+                            content: m.content,
+                            blocks,
+                            responseType,
+                            schemesFound,
+                            createdAt: m.createdAt,
+                        };
+                    })
                 );
             }
         } catch (error) {
@@ -130,7 +138,7 @@ export default function ChatbotPage() {
     };
     useEffect(() => {
         scrollToBottom();
-    }, [messages]);
+    }, [messages, loading]);
 
     /* ── Auto-resize textarea ─────────────────────────────── */
     useEffect(() => {
@@ -141,7 +149,7 @@ export default function ChatbotPage() {
     }, [input]);
 
     /* ── New Chat ─────────────────────────────────────────── */
-    const handleNewChat = async () => {
+    const handleNewChat = async (prefill?: string) => {
         if (!user) return;
         try {
             const res = await fetch("/api/chat/sessions", {
@@ -154,6 +162,10 @@ export default function ChatbotPage() {
                 setSessions((prev) => [data.session, ...prev]);
                 setActiveSessionId(data.session.id);
                 setMessages([]);
+                if (prefill) {
+                    setInput(prefill);
+                    setTimeout(() => textareaRef.current?.focus(), 100);
+                }
                 if (window.innerWidth < 768) setSidebarOpen(false);
             }
         } catch (error) {
@@ -187,14 +199,17 @@ export default function ChatbotPage() {
             }
         }
 
-        const userMessage: Message = { role: "user", content: input };
+        const userMessage: Message = {
+            role: "user",
+            content: input,
+            blocks: [{ type: "text", content: input }],
+        };
         setMessages((prev) => [...prev, userMessage]);
         const currentInput = input;
         setInput("");
         setLoading(true);
 
         try {
-            // Build chat_history for FastAPI v2
             const chatHistory = messages.slice(-6).map((m) => ({
                 role: m.role,
                 content: m.content,
@@ -215,15 +230,22 @@ export default function ChatbotPage() {
 
             const data = await response.json();
 
+            const answer = data.answer || "I couldn't find a relevant answer. Try rephrasing your question.";
+            const responseType = data.type || "GENERAL";
+            const schemesFound = data.schemes_found || [];
+            const blocks = formatAssistantMessage(answer, responseType, schemesFound);
+
             const assistantMsg: Message = {
                 role: "assistant",
-                content: data.answer || "I couldn't find a relevant answer. Try rephrasing your question.",
-                schemesFound: data.schemes_found || [],
+                content: answer,
+                blocks,
+                responseType,
+                schemesFound,
             };
 
             setMessages((prev) => [...prev, assistantMsg]);
 
-            // Update session title in sidebar if it was auto-titled
+            // Update session title
             setSessions((prev) =>
                 prev.map((s) =>
                     s.id === sessionId
@@ -240,16 +262,35 @@ export default function ChatbotPage() {
             );
         } catch (error) {
             console.error("Chat error:", error);
+            const errorContent = "⚠️ Could not reach the AI backend. Make sure FastAPI is running on localhost:8000.";
             setMessages((prev) => [
                 ...prev,
                 {
                     role: "assistant",
-                    content: "⚠️ Could not reach the AI backend. Make sure FastAPI is running on localhost:8000.",
+                    content: errorContent,
+                    blocks: [{ type: "text", content: errorContent }],
                 },
             ]);
         } finally {
             setLoading(false);
         }
+    };
+
+    /* ── Scheme Card Action: New Chat ─────────────────────── */
+    const handleSchemeNewChat = (schemeName: string) => {
+        handleNewChat(`Tell me more about ${schemeName} — eligibility, benefits, and how to apply.`);
+    };
+
+    /* ── Scheme Card Action: Reference ────────────────────── */
+    const handleSchemeReference = (schemeName: string) => {
+        setInput((prev) => (prev ? `${prev}\n\nRegarding ${schemeName}: ` : `Regarding ${schemeName}: `));
+        textareaRef.current?.focus();
+    };
+
+    /* ── Quick Action handler ─────────────────────────────── */
+    const handleQuickAction = (action: string) => {
+        setInput(action);
+        textareaRef.current?.focus();
     };
 
     /* ── Keyboard handler ─────────────────────────────────── */
@@ -293,64 +334,68 @@ export default function ChatbotPage() {
         }
     };
 
-    /* ── Scheme card level color ──────────────────────────── */
-    const getLevelColor = (level: string) => {
-        if (level === "Central") return "bg-blue-500/20 text-blue-300 border-blue-500/30";
-        if (level === "State") return "bg-emerald-500/20 text-emerald-300 border-emerald-500/30";
-        return "bg-amber-500/20 text-amber-300 border-amber-500/30";
-    };
-
     /* ── Loading state ────────────────────────────────────── */
     if (authLoading) {
         return (
-            <div className="h-screen bg-[#111111] flex items-center justify-center">
-                <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+            <div className="h-screen bg-[#FAF7F2] flex items-center justify-center">
+                <div className="w-8 h-8 border-2 border-[#D4DEC8] border-t-[#3D4F2F] rounded-full animate-spin" />
             </div>
         );
     }
 
     if (!user) return null;
 
+    const userInitials = user.name ? user.name.split(" ").map((n: string) => n.charAt(0)).join("").toUpperCase().slice(0, 2) : "U";
+
     /* ── Render ───────────────────────────────────────────── */
     return (
-        <div className="h-screen bg-[#111111] flex overflow-hidden text-white font-sans">
+        <div className="sangam-chat h-screen bg-[#FAF7F2] flex overflow-hidden font-sans">
             {/* ══════════ Sidebar ══════════ */}
             <aside
                 className={`${sidebarOpen ? "w-72" : "w-0"
-                    } transition-all duration-300 ease-in-out bg-[#1a1a1a] border-r border-white/[0.06] flex flex-col overflow-hidden shrink-0`}
+                    } transition-all duration-300 ease-in-out bg-[#FAF7F2] border-r border-[#E5DFD5] flex flex-col overflow-hidden shrink-0`}
             >
-                {/* Sidebar Header */}
-                <div className="p-4 border-b border-white/[0.06]">
+                {/* Sidebar Header — Branding */}
+                <div className="p-5 border-b border-[#E5DFD5]">
+                    <div className="mb-4">
+                        <h1 className="text-xl font-serif italic text-[#2D2D2D] font-semibold tracking-tight">Sangam AI</h1>
+                        <p className="text-[11px] text-[#9B9B9B] tracking-wide mt-0.5">The Digital Archivist</p>
+                    </div>
                     <button
-                        onClick={handleNewChat}
-                        className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.08] hover:border-white/[0.15] transition-all group"
+                        onClick={() => handleNewChat()}
+                        className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-white hover:bg-[#F0F4EC] border border-[#E5DFD5] hover:border-[#D4DEC8] transition-all group"
                     >
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400 group-hover:text-white transition-colors">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#6B7F5E] group-hover:text-[#3D4F2F] transition-colors">
                             <path d="M12 5v14M5 12h14" />
                         </svg>
-                        <span className="text-sm font-medium text-gray-300 group-hover:text-white transition-colors">New Chat</span>
+                        <span className="text-sm font-medium text-[#6B6B6B] group-hover:text-[#3D4F2F] transition-colors">New Chat</span>
                     </button>
                 </div>
 
+                {/* Recent History */}
+                <div className="px-5 pt-4 pb-1">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-[#9B9B9B]">Recent History</p>
+                </div>
+
                 {/* Chat List */}
-                <div className="flex-1 overflow-y-auto px-3 py-2 space-y-1 chat-scrollbar">
+                <div className="flex-1 overflow-y-auto px-3 py-1 space-y-0.5 chat-scrollbar">
                     {sessionLoading ? (
                         <div className="flex items-center justify-center py-8">
-                            <div className="w-5 h-5 border-2 border-white/10 border-t-white/40 rounded-full animate-spin" />
+                            <div className="w-5 h-5 border-2 border-[#D4DEC8] border-t-[#3D4F2F] rounded-full animate-spin" />
                         </div>
                     ) : sessions.length === 0 ? (
                         <div className="text-center py-12">
                             <div className="text-2xl mb-2">💬</div>
-                            <p className="text-sm text-gray-500">No conversations yet</p>
-                            <p className="text-xs text-gray-600 mt-1">Start a new chat to begin</p>
+                            <p className="text-sm text-[#9B9B9B]">No conversations yet</p>
+                            <p className="text-xs text-[#C5C5C5] mt-1">Start a new chat to begin</p>
                         </div>
                     ) : (
                         sessions.map((session) => (
                             <div
                                 key={session.id}
                                 className={`group relative rounded-lg transition-all ${activeSessionId === session.id
-                                    ? "bg-white/[0.08] border border-white/[0.1]"
-                                    : "hover:bg-white/[0.04] border border-transparent"
+                                    ? "bg-[#EEF2E8] border border-[#D4DEC8]"
+                                    : "hover:bg-[#F2EDE4] border border-transparent"
                                     }`}
                             >
                                 {editingSessionId === session.id ? (
@@ -364,22 +409,22 @@ export default function ChatbotPage() {
                                                 if (e.key === "Escape") setEditingSessionId(null);
                                             }}
                                             onBlur={() => handleRenameSession(session.id)}
-                                            className="w-full bg-white/[0.05] border border-white/[0.15] rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-blue-500/50"
+                                            className="w-full bg-white border border-[#D4DEC8] rounded-lg px-3 py-2 text-sm text-[#2D2D2D] outline-none focus:border-[#3D4F2F] focus:ring-1 focus:ring-[#3D4F2F]/20"
                                         />
                                     </div>
                                 ) : deleteConfirm === session.id ? (
                                     <div className="p-3 space-y-2">
-                                        <p className="text-xs text-gray-400">Delete this chat?</p>
+                                        <p className="text-xs text-[#6B6B6B]">Delete this chat?</p>
                                         <div className="flex gap-2">
                                             <button
                                                 onClick={() => handleDeleteSession(session.id)}
-                                                className="flex-1 text-xs px-2 py-1.5 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-colors"
+                                                className="flex-1 text-xs px-2 py-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
                                             >
                                                 Delete
                                             </button>
                                             <button
                                                 onClick={() => setDeleteConfirm(null)}
-                                                className="flex-1 text-xs px-2 py-1.5 rounded-lg bg-white/[0.05] text-gray-400 hover:bg-white/[0.1] transition-colors"
+                                                className="flex-1 text-xs px-2 py-1.5 rounded-lg bg-[#F2EDE4] text-[#6B6B6B] hover:bg-[#E5DFD5] transition-colors"
                                             >
                                                 Cancel
                                             </button>
@@ -393,17 +438,16 @@ export default function ChatbotPage() {
                                         }}
                                         className="w-full text-left p-3 flex items-start gap-3"
                                     >
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-gray-500 mt-0.5 shrink-0">
-                                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" strokeLinecap="round" strokeLinejoin="round" />
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className={`mt-0.5 shrink-0 ${activeSessionId === session.id ? "text-[#3D4F2F]" : "text-[#9B9B9B]"}`}>
+                                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" strokeLinecap="round" strokeLinejoin="round" />
+                                            <polyline points="14 2 14 8 20 8" strokeLinecap="round" strokeLinejoin="round" />
+                                            <line x1="16" y1="13" x2="8" y2="13" strokeLinecap="round" />
+                                            <line x1="16" y1="17" x2="8" y2="17" strokeLinecap="round" />
                                         </svg>
                                         <div className="min-w-0 flex-1">
-                                            <p className="text-sm text-gray-200 truncate">{session.title}</p>
-                                            <p className="text-[10px] text-gray-600 mt-0.5">
-                                                {new Date(session.updatedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
-                                            </p>
+                                            <p className={`text-sm truncate ${activeSessionId === session.id ? "text-[#2D2D2D] font-semibold" : "text-[#6B6B6B]"}`}>{session.title}</p>
                                         </div>
 
-                                        {/* Action buttons (visible on hover) */}
                                         <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
                                             <button
                                                 onClick={(e) => {
@@ -411,10 +455,10 @@ export default function ChatbotPage() {
                                                     setEditingSessionId(session.id);
                                                     setEditTitle(session.title);
                                                 }}
-                                                className="p-1 rounded hover:bg-white/[0.1] transition-colors"
+                                                className="p-1 rounded hover:bg-[#D4DEC8] transition-colors"
                                                 title="Rename"
                                             >
-                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-500">
+                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-[#6B7F5E]">
                                                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" strokeLinecap="round" strokeLinejoin="round" />
                                                     <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" strokeLinecap="round" strokeLinejoin="round" />
                                                 </svg>
@@ -424,10 +468,10 @@ export default function ChatbotPage() {
                                                     e.stopPropagation();
                                                     setDeleteConfirm(session.id);
                                                 }}
-                                                className="p-1 rounded hover:bg-red-500/20 transition-colors"
+                                                className="p-1 rounded hover:bg-red-50 transition-colors"
                                                 title="Delete"
                                             >
-                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-500 hover:text-red-400">
+                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-[#9B9B9B] hover:text-red-500">
                                                     <polyline points="3 6 5 6 21 6" strokeLinecap="round" strokeLinejoin="round" />
                                                     <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" strokeLinecap="round" strokeLinejoin="round" />
                                                 </svg>
@@ -440,40 +484,33 @@ export default function ChatbotPage() {
                     )}
                 </div>
 
-                {/* Sidebar Footer — User info + back */}
-                <div className="p-4 border-t border-white/[0.06]">
-                    <div className="flex items-center gap-3 mb-3">
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-xs font-bold shrink-0">
-                            {user.name?.charAt(0).toUpperCase() || "U"}
+                {/* Sidebar Footer */}
+                <div className="p-4 border-t border-[#E5DFD5]">
+                    <Link href="/profile" className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-[#F2EDE4] transition-colors mb-3">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-[#6B6B6B]">
+                            <circle cx="12" cy="12" r="3" />
+                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                        <span className="text-sm text-[#6B6B6B]">Settings</span>
+                    </Link>
+                    <div className="flex items-center gap-3 px-2">
+                        <div className="w-8 h-8 rounded-full bg-[#3D4F2F] flex items-center justify-center text-xs font-bold text-white shrink-0">
+                            {userInitials}
                         </div>
                         <div className="min-w-0">
-                            <p className="text-sm font-medium text-gray-200 truncate">{user.name}</p>
-                            <p className="text-[10px] text-gray-500 truncate">{user.email}</p>
+                            <p className="text-sm font-medium text-[#2D2D2D] truncate">{user.name}</p>
                         </div>
                     </div>
-                    <Link
-                        href="/"
-                        className="flex items-center gap-2 text-xs text-gray-500 hover:text-gray-300 transition-colors"
-                    >
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M19 12H5M12 19l-7-7 7-7" />
-                        </svg>
-                        Back to Sangam
-                    </Link>
                 </div>
             </aside>
 
             {/* ══════════ Main Chat Area ══════════ */}
             <main className="flex-1 flex flex-col min-w-0">
                 {/* ── Chat Header ────────────────────────────── */}
-                <header className="h-14 border-b border-white/[0.06] flex items-center justify-between px-4 shrink-0 bg-[#111111]/80 backdrop-blur-xl">
+                <header className="h-14 border-b border-[#E5DFD5] flex items-center justify-between px-5 shrink-0 bg-white/80 backdrop-blur-xl">
                     <div className="flex items-center gap-3">
-                        {/* Sidebar toggle */}
-                        <button
-                            onClick={() => setSidebarOpen(!sidebarOpen)}
-                            className="p-2 rounded-lg hover:bg-white/[0.06] transition-colors"
-                        >
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400">
+                        <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 rounded-lg hover:bg-[#F2EDE4] transition-colors">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#6B6B6B]">
                                 {sidebarOpen ? (
                                     <>
                                         <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
@@ -488,39 +525,43 @@ export default function ChatbotPage() {
                                 )}
                             </svg>
                         </button>
-
-                        <div>
-                            <h1 className="text-sm font-semibold text-gray-200">Sangam AI</h1>
-                            <p className="text-[10px] text-gray-500">Powered by Gemini 2.5 Flash + RAG</p>
-                        </div>
+                        <h1 className="text-base font-semibold text-[#2D2D2D]">Sangam AI</h1>
                     </div>
-
-                    <div className="flex items-center gap-2">
-                        <button
-                            onClick={handleNewChat}
-                            className="p-2 rounded-lg hover:bg-white/[0.06] transition-colors"
-                            title="New Chat"
-                        >
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400">
-                                <path d="M12 5v14M5 12h14" />
+                    <div className="flex items-center gap-1">
+                        <button className="p-2 rounded-lg hover:bg-[#F2EDE4] transition-colors" title="Help">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-[#6B6B6B]">
+                                <circle cx="12" cy="12" r="10" />
+                                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" strokeLinecap="round" strokeLinejoin="round" />
+                                <line x1="12" y1="17" x2="12.01" y2="17" />
                             </svg>
                         </button>
+                        <button className="p-2 rounded-lg hover:bg-[#F2EDE4] transition-colors" title="Settings">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-[#6B6B6B]">
+                                <circle cx="12" cy="12" r="3" />
+                                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                        </button>
+                        <Link href="/profile" className="p-1.5 rounded-lg hover:bg-[#F2EDE4] transition-colors ml-1">
+                            <div className="w-7 h-7 rounded-full bg-[#3D4F2F] flex items-center justify-center text-[10px] font-bold text-white">
+                                {userInitials}
+                            </div>
+                        </Link>
                     </div>
                 </header>
 
                 {/* ── Messages Area ──────────────────────────── */}
-                <div className="flex-1 overflow-y-auto chat-scrollbar">
-                    <div className="max-w-3xl mx-auto px-4 py-6 space-y-6">
-                        {/* Welcome message when no session or empty */}
+                <div className="flex-1 overflow-y-auto chat-scrollbar bg-[#FAF7F2]">
+                    <div className="max-w-3xl mx-auto px-5 py-6 space-y-6">
+                        {/* Welcome */}
                         {messages.length === 0 && (
                             <div className="flex flex-col items-center justify-center min-h-[60vh] animate-fade-in-up">
-                                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center mb-6 shadow-lg shadow-blue-500/20">
+                                <div className="w-16 h-16 rounded-2xl bg-[#3D4F2F] flex items-center justify-center mb-6 shadow-lg shadow-[#3D4F2F]/15">
                                     <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5">
-                                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" strokeLinecap="round" strokeLinejoin="round" />
+                                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" strokeLinecap="round" strokeLinejoin="round" />
                                     </svg>
                                 </div>
-                                <h2 className="text-2xl font-bold text-white mb-2">Sangam AI Assistant</h2>
-                                <p className="text-gray-500 text-center max-w-md mb-8">
+                                <h2 className="text-2xl font-bold text-[#2D2D2D] mb-2">Sangam AI Assistant</h2>
+                                <p className="text-[#9B9B9B] text-center max-w-md mb-8">
                                     Your intelligent guide to Indian government schemes. Ask me anything about eligibility, benefits, or how to apply.
                                 </p>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-lg">
@@ -536,7 +577,7 @@ export default function ChatbotPage() {
                                                 setInput(suggestion);
                                                 textareaRef.current?.focus();
                                             }}
-                                            className="text-left text-sm p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] text-gray-400 hover:bg-white/[0.06] hover:border-white/[0.12] hover:text-gray-200 transition-all"
+                                            className="text-left text-sm p-4 rounded-xl bg-white border border-[#E5DFD5] text-[#6B6B6B] hover:bg-[#F0F4EC] hover:border-[#D4DEC8] hover:text-[#3D4F2F] transition-all"
                                         >
                                             {suggestion}
                                         </button>
@@ -545,128 +586,78 @@ export default function ChatbotPage() {
                             </div>
                         )}
 
-                        {/* Messages */}
+                        {/* Messages — rendered via MessageRenderer */}
                         {messages.map((msg, idx) => (
                             <div
                                 key={idx}
-                                className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"} chatMsg`}
+                                className="chatMsg"
                                 style={{ animationDelay: `${idx * 30}ms` }}
                             >
-                                <div className={`max-w-[85%] ${msg.role === "user" ? "" : "flex gap-3"}`}>
-                                    {/* Assistant avatar */}
-                                    {msg.role === "assistant" && (
-                                        <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shrink-0 mt-1">
-                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-                                                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" strokeLinecap="round" strokeLinejoin="round" />
-                                            </svg>
-                                        </div>
-                                    )}
-
-                                    <div
-                                        className={`rounded-2xl px-4 py-3 ${msg.role === "user"
-                                            ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-tr-sm"
-                                            : "bg-white/[0.04] text-gray-200 border border-white/[0.06] rounded-tl-sm"
-                                            }`}
-                                    >
-                                        {/* Message content */}
-                                        <div
-                                            className="text-sm leading-relaxed break-words prose-invert"
-                                            dangerouslySetInnerHTML={{
-                                                __html: msg.content
-                                                    .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-                                                    .replace(/\n/g, "<br/>"),
-                                            }}
-                                        />
-
-                                        {/* Scheme Cards */}
-                                        {msg.schemesFound && msg.schemesFound.length > 0 && (
-                                            <div className="mt-4 space-y-2">
-                                                <div className="text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-2">
-                                                    📋 Matching Schemes
-                                                </div>
-                                                {msg.schemesFound.map((scheme, i) => (
-                                                    <div
-                                                        key={i}
-                                                        className="bg-white/[0.04] border border-white/[0.08] rounded-xl p-3 hover:bg-white/[0.06] hover:border-white/[0.12] transition-all group cursor-pointer"
-                                                    >
-                                                        <div className="font-semibold text-sm text-gray-100 group-hover:text-white transition-colors mb-2">
-                                                            {scheme.scheme_name || "Unnamed Scheme"}
-                                                        </div>
-                                                        <div className="flex flex-wrap gap-1.5">
-                                                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${getLevelColor(scheme.level)}`}>
-                                                                {scheme.level || "—"}
-                                                            </span>
-                                                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full border bg-purple-500/20 text-purple-300 border-purple-500/30">
-                                                                {scheme.category || "—"}
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
+                                <MessageRenderer
+                                    blocks={msg.blocks}
+                                    userInitials={userInitials}
+                                    role={msg.role}
+                                    onNewChat={handleSchemeNewChat}
+                                    onReference={handleSchemeReference}
+                                />
                             </div>
                         ))}
 
-                        {/* Typing indicator */}
-                        {loading && (
-                            <div className="flex justify-start chatMsg">
-                                <div className="flex gap-3">
-                                    <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shrink-0 mt-1">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-                                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" strokeLinecap="round" strokeLinejoin="round" />
-                                        </svg>
-                                    </div>
-                                    <div className="bg-white/[0.04] border border-white/[0.06] rounded-2xl rounded-tl-sm px-4 py-3">
-                                        <div className="flex gap-1.5 items-center h-5">
-                                            <span className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                                            <span className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                                            <span className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
+                        {/* Processing Animation */}
+                        <ProcessingIndicator loading={loading} />
 
                         <div ref={messagesEndRef} />
                     </div>
                 </div>
 
                 {/* ── Input Area ─────────────────────────────── */}
-                <div className="border-t border-white/[0.06] p-4 bg-[#111111]">
+                <div className="border-t border-[#E5DFD5] p-4 bg-white">
                     <div className="max-w-3xl mx-auto">
                         <form onSubmit={handleSubmit} className="relative">
-                            <div className="flex items-end gap-3 bg-white/[0.04] border border-white/[0.08] rounded-2xl p-2 focus-within:border-white/[0.15] focus-within:bg-white/[0.06] transition-all">
+                            <div className="flex items-end gap-3 bg-[#FAF7F2] border border-[#E5DFD5] rounded-2xl p-2 focus-within:border-[#D4DEC8] focus-within:ring-2 focus-within:ring-[#3D4F2F]/10 transition-all">
                                 <textarea
                                     ref={textareaRef}
                                     value={input}
                                     onChange={(e) => setInput(e.target.value)}
                                     onKeyDown={handleKeyDown}
-                                    placeholder="Ask about any government scheme…"
+                                    placeholder="Ask Sangam AI about eligibility or scheme details..."
                                     rows={1}
-                                    className="flex-1 bg-transparent text-sm text-gray-200 placeholder-gray-600 px-3 py-2 resize-none outline-none overflow-hidden"
+                                    className="flex-1 bg-transparent text-sm text-[#2D2D2D] placeholder-[#9B9B9B] px-3 py-2.5 resize-none outline-none overflow-hidden"
                                     disabled={loading}
                                 />
                                 <button
                                     type="submit"
                                     disabled={loading || !input.trim()}
-                                    className="p-2.5 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all flex items-center justify-center shrink-0"
+                                    className="p-2.5 rounded-xl bg-[#3D4F2F] hover:bg-[#4A6335] text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all flex items-center justify-center shrink-0"
                                 >
                                     {loading ? (
                                         <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                                     ) : (
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                            <line x1="22" y1="2" x2="11" y2="13" />
-                                            <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                                            <line x1="12" y1="19" x2="12" y2="5" />
+                                            <polyline points="5 12 12 5 19 12" />
                                         </svg>
                                     )}
                                 </button>
                             </div>
                         </form>
-                        <p className="text-center mt-2 text-[10px] text-gray-600">
-                            Shift+Enter for new line · AI can make mistakes — verify important info
-                        </p>
+
+                        {/* Quick Action Chips */}
+                        <div className="flex items-center justify-center gap-3 mt-3">
+                            {["CHECK ELIGIBILITY", "COMPARE SCHEMES", "EXPERT ANALYSIS"].map((action) => (
+                                <button
+                                    key={action}
+                                    onClick={() => handleQuickAction(
+                                        action === "CHECK ELIGIBILITY" ? "Check my eligibility for government schemes" :
+                                        action === "COMPARE SCHEMES" ? "Compare schemes available for my profile" :
+                                        "Give me an expert analysis of the best schemes for me"
+                                    )}
+                                    className="text-[10px] font-bold tracking-[0.08em] text-[#6B7F5E] hover:text-[#3D4F2F] hover:bg-[#F0F4EC] px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
+                                >
+                                    {action}
+                                </button>
+                            ))}
+                        </div>
                     </div>
                 </div>
             </main>

@@ -147,10 +147,28 @@ body {
   animation-delay: 1000ms;
 }
 
-/* ── Chatbot ────────────────────────────────────────────────── */
+/* ── Chatbot — Warm Sangam Theme ─────────────────────────────── */
+
+.sangam-chat {
+  --sangam-cream: #FAF7F2;
+  --sangam-cream-dark: #F2EDE4;
+  --sangam-olive: #3D4F2F;
+  --sangam-olive-light: #4A6335;
+  --sangam-olive-muted: #6B7F5E;
+  --sangam-green-bg: #F0F4EC;
+  --sangam-green-border: #D4DEC8;
+  --sangam-text: #2D2D2D;
+  --sangam-text-secondary: #6B6B6B;
+  --sangam-text-muted: #9B9B9B;
+  --sangam-border: #E5DFD5;
+  --sangam-border-light: #EDE8DF;
+  --sangam-sidebar-bg: #FAF7F2;
+  --sangam-card-bg: #F5F8F0;
+  --sangam-active-bg: #EEF2E8;
+}
 
 .chat-scrollbar::-webkit-scrollbar {
-  width: 4px;
+  width: 5px;
 }
 
 .chat-scrollbar::-webkit-scrollbar-track {
@@ -158,12 +176,12 @@ body {
 }
 
 .chat-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(61, 79, 47, 0.15);
   border-radius: 4px;
 }
 
 .chat-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(61, 79, 47, 0.3);
 }
 
 @keyframes msgSlideIn {
@@ -180,6 +198,61 @@ body {
 
 .chatMsg {
   animation: msgSlideIn 0.3s ease-out forwards;
+}
+
+/* ── Perplexity-style Processing Animation ──────────────────── */
+
+@keyframes stagePulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+@keyframes stageSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes spinnerRotate {
+  to { transform: rotate(360deg); }
+}
+
+.processing-stage {
+  animation: stageSlideIn 0.3s ease-out forwards;
+}
+
+.processing-stage-active .stage-label {
+  animation: stagePulse 1.5s ease-in-out infinite;
+}
+
+.processing-spinner {
+  animation: spinnerRotate 1s linear infinite;
+}
+
+@keyframes checkPop {
+  0% { transform: scale(0); opacity: 0; }
+  60% { transform: scale(1.2); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.stage-check {
+  animation: checkPop 0.3s ease-out forwards;
+}
+
+/* ── Scheme Card Hover ──────────────────────────────────────── */
+
+.scheme-card-sangam {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.scheme-card-sangam:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(61, 79, 47, 0.1);
 }
 
 /* Hide Navbar and Footer on chatbot pages */

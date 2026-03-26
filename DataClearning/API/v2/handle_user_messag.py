@@ -3,7 +3,7 @@ from API.v2.ROUTER_PROMPT import ROUTER_PROMPT
 from API.v2.GENERATION_PROMPT import GENERATION_PROMPT
 from Sql.client import connect
 from API.v2.utils.embedding import get_embedding
-from API.v2.utils.llm import call_gemini
+from API.v2.utils.llm import call_gemini, call_nvidia_llm
 
 def search_pgvector(query_text: str, filter_state: str, filter_category: str, top_k: int)->list:
     supabase=connect()
@@ -33,7 +33,7 @@ def handle_user_message(user_message: str, user_profile: dict, chat_history: lis
         chat_history=format_history(chat_history)
     )
     
-    raw = call_gemini(router_input)           # your existing Gemini call
+    raw = call_nvidia_llm(router_input) #call_gemini(router_input)           # your existing Gemini call
     
     # Clean up markdown formatting (Gemini often wraps JSON in ```json blocks)
     clean_raw = raw.strip()
@@ -73,7 +73,7 @@ def handle_user_message(user_message: str, user_profile: dict, chat_history: lis
         schemes_block=build_schemes_block(schemes)
     )
     
-    answer = call_gemini(generation_input)
+    answer = call_nvidia_llm(generation_input)
     return answer
 
 

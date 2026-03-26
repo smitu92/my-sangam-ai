@@ -11,7 +11,7 @@ activate:
 	source venv/bin/activate
 # Dev
 dev:
-	./venv/bin/python API/Main.py
+	./venv/bin/python -m API.Main
 
 # Utilities
 freeze:

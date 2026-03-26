@@ -29,7 +29,7 @@ const BaseSchema = z.object({
   disability: z.boolean().default(false),
   disabilityType: z.string().nullable().optional(),
   rationCard: RationCardEnum.default("None"),
-  religion: z.string().optional(),
+  religion: z.string().nullish(),
   occupation: OccupationEnum,
 });
 
@@ -39,13 +39,13 @@ const StudentFields = z.object({
   institutionType: InstitutionTypeEnum,
   courseName: z.string().min(1, "Course name is required"),
   yearOfStudy: z.number().int().min(1).max(7),
-  marksPercentage: z.number().min(0).max(100).optional(),
+  marksPercentage: z.number().min(0).max(100).nullish(),
 });
 
 const TeacherResearcherFields = z.object({
   educationLevel: EducationLevelEnum,
   institutionType: InstitutionTypeEnum,
-  courseName: z.string().optional(),  // subject/department
+  courseName: z.string().nullish(),  // subject/department
   experienceYears: z.number().int().min(0),
 });
 
@@ -57,8 +57,8 @@ const FarmerFields = z.object({
 });
 
 const DairyFields = z.object({
-  landSizeAcres: z.number().min(0).optional(),
-  landOwnership: z.boolean().optional(),
+  landSizeAcres: z.number().min(0).nullish(),
+  landOwnership: z.boolean().nullish(),
   animalCount: z.number().int().min(1),
   animalType: z.string().min(1, "Animal type is required"),
 });
@@ -66,13 +66,13 @@ const DairyFields = z.object({
 const BusinessFields = z.object({
   businessType: z.string().min(1, "Business type is required"),
   gstRegistered: z.boolean(),
-  employeeCount: z.number().int().min(0).optional(),
-  annualTurnover: z.number().int().min(0).optional(),
+  employeeCount: z.number().int().min(0).nullish(),
+  annualTurnover: z.number().int().min(0).nullish(),
 });
 
 const SmallBusinessFields = BusinessFields.extend({
   msmeRegistered: z.boolean(),
-  udyamNumber: z.string().optional(),
+  udyamNumber: z.string().nullish(),
 });
 
 const JobSeekerFields = z.object({

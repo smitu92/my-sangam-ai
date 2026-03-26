@@ -32,6 +32,7 @@ export async function POST(req: Request) {
                 question,
                 user_profile: user_profile || "",
                 chat_history: chat_history || [],
+                session_id: sessionId,
             }),
         });
 
@@ -72,6 +73,7 @@ export async function POST(req: Request) {
 
         return NextResponse.json({
             answer: data.answer,
+            type: data.type || "GENERAL",
             schemes_found: data.schemes_found || [],
         });
     } catch (error: any) {

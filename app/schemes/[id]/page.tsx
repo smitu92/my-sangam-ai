@@ -57,6 +57,24 @@ export default function SchemeDetailsPage({
     const [error, setError] = useState("");
     const [activeSection, setActiveSection] = useState('overview');
     const [currentSlide, setCurrentSlide] = useState(0);
+    const [eligibilityData, setEligibilityData] = useState<{ chance: string, criteria: { label: string, match: boolean }[] } | null>(null);
+    const [eligibilityLoading, setEligibilityLoading] = useState(false);
+
+    // Dynamic AI Eligibility Fetching
+    useEffect(() => {
+        if (activeSection === 'eligibility' && !eligibilityData && !eligibilityLoading && id) {
+            setEligibilityLoading(true);
+            fetch(`/api/schemes/${id}/eligibility`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data && data.chance) {
+                        setEligibilityData(data);
+                    }
+                })
+                .catch(err => console.error("Eligibility check failed", err))
+                .finally(() => setEligibilityLoading(false));
+        }
+    }, [activeSection, id, eligibilityData, eligibilityLoading]);
 
     useEffect(() => {
         const fetchScheme = async () => {
@@ -297,25 +315,36 @@ export default function SchemeDetailsPage({
                                         <h3 className="text-gray-900 font-bold text-sm uppercase tracking-wider">AI Eligibility Analysis</h3>
                                     </div>
                                     <p className="text-gray-700 font-medium">
-                                        Based on your profile, you have a <span className="font-black bg-white border border-gray-200 px-2 py-0.5 rounded text-gray-900">High Chance</span> of being eligible for this scheme.
+                                        {eligibilityLoading ? (
+                                            <span className="animate-pulse bg-gray-200 text-transparent px-2 rounded">Analyzing your profile against scheme guidelines... this may take a few moments.</span>
+                                        ) : eligibilityData ? (
+                                            <>Based on your profile, you have a <span className={`font-black bg-white border border-gray-200 px-2 py-0.5 rounded ${eligibilityData.chance === 'High' ? 'text-green-600' : 'text-gray-900'}`}>{eligibilityData.chance} Chance</span> of being eligible for this scheme.</>
+                                        ) : (
+                                            "Please login or update your profile to view full AI analysis."
+                                        )}
                                     </p>
                                 </div>
                                 <div className="space-y-4">
-                                    {/* Placeholder criteria */}
-                                    <div className="flex items-center justify-between p-4 bg-white rounded-xl border border-gray-200">
-                                        <span className="font-bold text-gray-700">Indian Citizen</span>
-                                        <span className="text-gray-900 font-bold flex items-center gap-1">
-                                            <CheckCircle className="w-5 h-5" />
-                                            Match
-                                        </span>
-                                    </div>
-                                    <div className="flex items-center justify-between p-4 bg-white rounded-xl border border-gray-200">
-                                        <span className="font-bold text-gray-700">Income &lt; ₹2.5L</span>
-                                        <span className="text-gray-900 font-bold flex items-center gap-1">
-                                            <CheckCircle className="w-5 h-5" />
-                                            Match
-                                        </span>
-                                    </div>
+                                    {eligibilityLoading ? (
+                                        <div className="flex flex-col items-center justify-center p-8 space-y-4">
+                                            <div className="w-8 h-8 border-4 border-gray-200 border-t-gray-900 rounded-full animate-spin"></div>
+                                            <p className="font-bold text-gray-400 uppercase text-xs tracking-widest">Mistral AI is checking criteria...</p>
+                                        </div>
+                                    ) : eligibilityData ? (
+                                        eligibilityData.criteria.map((crit, idx) => (
+                                            <div key={idx} className="flex items-center justify-between p-4 bg-white rounded-xl border border-gray-200 shadow-sm">
+                                                <span className="font-bold text-gray-700">{crit.label}</span>
+                                                <span className={`font-bold flex items-center gap-1 ${crit.match ? 'text-green-600' : 'text-red-500'}`}>
+                                                    {crit.match ? <CheckCircle className="w-5 h-5" /> : (
+                                                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                                        </svg>
+                                                    )}
+                                                    {crit.match ? 'Match' : 'Unmatched'}
+                                                </span>
+                                            </div>
+                                        ))
+                                    ) : null}
                                 </div>
                             </div>
                         )}

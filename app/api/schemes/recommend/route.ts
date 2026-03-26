@@ -1,133 +1,196 @@
-
 import { NextResponse } from 'next/server';
-import { db, schemes, users } from '@/db';
+import prisma from '@/lib/prisma';
 import { AIService } from '@/lib/ai-service';
-import { eq, and, or, desc } from 'drizzle-orm';
-import { getSession } from "@/lib/auth";
+import { supabase } from '@/lib/supabase/createClient';
+
+// ── Helper: Build niche keywords from the UserProfile schema fields ──
+function buildNicheKeywords(profile: any): string[] {
+    const keywords: string[] = [];
+    const occ = profile.occupation || '';
+
+    switch (occ) {
+        case 'Student':
+            keywords.push('scholarship', 'student', 'education');
+            if (profile.educationLevel) {
+                const eduMap: Record<string, string[]> = {
+                    'Below10th': ['pre-matric', 'school'],
+                    'Class10th': ['matric', '10th', 'secondary'],
+                    'Class12th': ['post-matric', '12th', 'higher secondary'],
+                    'ITI': ['ITI', 'vocational', 'technical'],
+                    'Diploma': ['diploma', 'polytechnic'],
+                    'Graduate': ['graduate', 'degree', 'undergraduate', 'B.Tech'],
+                    'Postgraduate': ['postgraduate', 'masters', 'M.Tech'],
+                    'PhD': ['research', 'doctoral', 'PhD'],
+                };
+                keywords.push(...(eduMap[profile.educationLevel] || []));
+            }
+            if (profile.courseName) keywords.push(profile.courseName);
+            if (profile.institutionType === 'Government') keywords.push('government institution');
+            break;
+
+        case 'Farmer':
+            keywords.push('farmer', 'agriculture', 'kisan', 'crop');
+            if (profile.cropType) keywords.push(profile.cropType);
+            if (profile.irrigationAccess === false) keywords.push('irrigation');
+            if (profile.landSizeAcres && profile.landSizeAcres < 2) keywords.push('small farmer', 'marginal');
+            break;
+
+        case 'DairyFarm':
+            keywords.push('dairy', 'animal husbandry', 'cattle', 'livestock');
+            if (profile.animalType) keywords.push(profile.animalType);
+            break;
+
+        case 'Business':
+        case 'SmallBusiness':
+            keywords.push('entrepreneur', 'business', 'startup', 'MSME');
+            if (profile.msmeRegistered) keywords.push('MSME registered');
+            if (profile.businessType) keywords.push(profile.businessType);
+            break;
+
+        case 'JobSeeker':
+            keywords.push('employment', 'skill training', 'placement', 'job');
+            break;
+
+        case 'Teacher':
+            keywords.push('teacher', 'education', 'faculty', 'teaching');
+            break;
+
+        case 'Researcher':
+            keywords.push('research', 'fellowship', 'innovation', 'R&D');
+            break;
+
+        case 'SelfEmployed':
+            keywords.push('self-employed', 'artisan', 'micro enterprise', 'livelihood');
+            break;
+
+        default:
+            keywords.push(occ.toLowerCase());
+            break;
+    }
+
+    // Caste-based keywords
+    if (profile.caste === 'SC') keywords.push('SC', 'Scheduled Caste');
+    if (profile.caste === 'ST') keywords.push('ST', 'Scheduled Tribe', 'tribal');
+    if (profile.caste === 'OBC') keywords.push('OBC', 'Other Backward');
+    if (profile.caste === 'EWS') keywords.push('EWS', 'Economically Weaker');
+
+    // Disability
+    if (profile.disability) keywords.push('disability', 'specially-abled', 'handicapped');
+
+    // Gender-specific
+    if (profile.gender === 'Female') keywords.push('women', 'girl', 'mahila');
+
+    // BPL
+    if (profile.rationCard === 'BPL' || profile.rationCard === 'AAY') keywords.push('BPL', 'below poverty');
+
+    return [...new Set(keywords)]; // Deduplicate
+}
 
 export async function GET(req: Request) {
     try {
-        const userPayload = await getSession();
-        if (!userPayload?.userId) {
+        // ── 1. Authenticate ──
+        const authCookie = req.headers.get('cookie')
+            ?.split(';')
+            .find(c => c.trim().startsWith('sb-access-token='))
+            ?.split('=')[1];
+
+        if (!authCookie) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const userProfile = await db.query.users.findFirst({
-            where: eq(users.id, userPayload.userId)
+        const { data: { user } } = await supabase.auth.getUser(authCookie);
+        if (!user) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
+        // ── 2. Load User Profile ──
+        const userProfile = await prisma.userProfile.findUnique({
+            where: { userId: user.id }
         });
 
-        if (!userProfile) return NextResponse.json({ error: 'User not found' }, { status: 404 });
-
-        // profile data
-        const dob = userProfile.dob;
-        let userAge = 0;
-        if (dob) {
-            const birthDate = new Date(dob);
-            const today = new Date();
-            userAge = today.getFullYear() - birthDate.getFullYear();
-            if (today.getMonth() < birthDate.getMonth() || (today.getMonth() === birthDate.getMonth() && today.getDate() < birthDate.getDate())) {
-                userAge--;
-            }
+        if (!userProfile) {
+            return NextResponse.json({ error: 'User profile not found' }, { status: 404 });
         }
 
-        const userIncome = userProfile.income ? parseFloat(userProfile.income.replace(/[^0-9.]/g, '')) : 0;
-        const userOccupation = (userProfile.occupation || '').toLowerCase();
-        const userGender = userProfile.gender || 'All';
-        const userCategory = (userProfile.category || '').toLowerCase();
-        const userLocation = (userProfile.location || '').toLowerCase();
+        const userState = userProfile.state; // e.g. "Gujarat"
+        const nicheKeywords = buildNicheKeywords(userProfile);
 
-        // 1. Fetch Candidates (Basic filter)
-        let candidates = await db.select().from(schemes).where(eq(schemes.status, 'active'));
+        console.log(`📋 Recommendation Pipeline for: ${userProfile.name} (${userProfile.occupation})`);
+        console.log(`  State: ${userState}`);
+        console.log(`  Niche Keywords: ${nicheKeywords.join(', ')}`);
 
-        // 2. High Precision Scoring
-        const rankedCandidates = candidates
-            .filter(s => {
-                // STICT GENDER CHECK
-                if (s.gender !== 'All' && s.gender !== userGender) return false;
+        // ══════════════════════════════════════════════════════════════
+        // STAGE 1: Hard State Filter (User's State + Central)
+        // The `level` column stores "State" or "Central", NOT the actual 
+        // state name. The actual state name is embedded in `details` text.
+        // So we filter: (details ILIKE '%Gujarat%') OR (level = 'Central')
+        // ══════════════════════════════════════════════════════════════
 
-                // STICT AGE CHECK
-                if (userAge > 0) {
-                    if (s.ageMin && userAge < s.ageMin) return false;
-                    if (s.ageMax && userAge > s.ageMax) return false;
-                }
+        const stateFilteredSchemes = await prisma.$queryRawUnsafe<any[]>(
+            `SELECT id, scheme_name, details, benefits, eligibility, level, "schemeCategory", tags
+             FROM schemes
+             WHERE (LOWER(details) LIKE LOWER($1) OR LOWER(level) = 'central')
+             LIMIT 500`,
+            `%${userState}%`
+        );
 
-                // STICT INCOME CHECK
-                if (userIncome > 0 && s.incomeLimit && userIncome > s.incomeLimit) return false;
+        console.log(`  Stage 1: ${stateFilteredSchemes.length} schemes after state filter (${userState} + Central)`);
 
-                // STICT CASTE CHECK (if scheme lists specific castes)
-                if (s.caste && s.caste.length > 0 && userCategory) {
-                    const normalizedCaste = s.caste.map(c => c.toLowerCase());
-                    if (!normalizedCaste.includes(userCategory)) return false;
-                }
+        // ══════════════════════════════════════════════════════════════
+        // STAGE 2: Occupation Niche Filter (Keyword Matching)
+        // From the Stage 1 pool, filter schemes that match the user's
+        // occupation-specific keywords in title, details, or eligibility.
+        // ══════════════════════════════════════════════════════════════
 
-                // STATE CHECK (Central or Local State)
-                const schemeState = s.state.toLowerCase();
-                if (schemeState !== 'central') {
-                    if (!userLocation.includes(schemeState)) return false;
-                }
+        const nicheMatches = stateFilteredSchemes.filter(scheme => {
+            const searchText = `${scheme.scheme_name} ${scheme.details || ''} ${scheme.eligibility || ''} ${scheme.benefits || ''} ${scheme.schemeCategory || ''}`.toLowerCase();
+            
+            // A scheme matches if ANY of the niche keywords appear in its text
+            return nicheKeywords.some(kw => searchText.includes(kw.toLowerCase()));
+        });
 
-                return true; // Eligible
-            })
-            .map(s => {
-                let score = 50.0; // Base score for eligibility
-                const schemeCat = s.category.toLowerCase();
-                const schemeTitle = s.title.toLowerCase();
-                const schemeDesc = s.description.toLowerCase();
+        console.log(`  Stage 2: ${nicheMatches.length} schemes after niche filter`);
 
-                // --- PRIORITY 1: Occupation-Category Alignment (+30) ---
-                if (userOccupation) {
-                    // Logic: Farmer -> Agriculture, Student -> Education, Business -> Business
-                    if (userOccupation.includes('farmer') && schemeCat.includes('agri')) score += 30;
-                    else if (userOccupation.includes('student') && schemeCat.includes('education')) score += 30;
-                    else if (userOccupation.includes('entrepreneur') && schemeCat.includes('business')) score += 30;
-                    else if (userOccupation.includes('business') && schemeCat.includes('business')) score += 30;
-                    else if (userOccupation.includes('startup') && schemeCat.includes('business')) score += 30;
+        // If niche is too strict, relax to just state-filtered schemes
+        const candidatePool = nicheMatches.length >= 3 ? nicheMatches : stateFilteredSchemes;
 
-                    // Minor boost for keyword in title/tags (+10)
-                    if (schemeTitle.includes(userOccupation)) score += 10;
-                    if (s.tags?.some(t => t.toLowerCase().includes(userOccupation))) score += 10;
-                }
+        // Pick top 15 from the pool (shuffle for variety on each refresh)
+        const shuffled = [...candidatePool].sort(() => 0.5 - Math.random());
+        const top15 = shuffled.slice(0, 15);
 
-                // --- PRIORITY 2: Targeted Caste Relevance (+10) ---
-                if (s.caste && s.caste.length > 0 && s.caste.length < 4) {
-                    score += 10; // If it's specifically for minority/specific castes and user is eligible
-                }
+        // ══════════════════════════════════════════════════════════════
+        // STAGE 3: AI Ranking + Supportive Reason Generation
+        // Send the filtered candidates to the LLM for personalized
+        // ranking and one-liner supportive reasons.
+        // ══════════════════════════════════════════════════════════════
 
-                // --- PRIORITY 3: State Specificity (+5) ---
-                if (s.state.toLowerCase() !== 'central') {
-                    score += 5; // Local state schemes are usually more targeted
-                }
-
-                const finalScore = Math.min(score, 99);
-                return { ...s, matchScore: parseFloat(finalScore.toFixed(1)) };
-            })
-            // Only suggest if score is actually boosted (don't show random general schemes as "Recommended")
-            .filter(s => s.matchScore > 50)
-            .sort((a, b) => b.matchScore - a.matchScore)
-            .slice(0, 20);
-
-        if (rankedCandidates.length === 0) return NextResponse.json([]);
-
-        // 3. AI-Powered Insights (toggle via USE_AI env var)
-        let reasons: Record<string, string> = {};
-        const useAI = process.env.USE_AI === 'true';
-
-        if (useAI) {
-            try {
-                console.log('🤖 AI Mode: Generating personalized scheme reasons...');
-                reasons = await AIService.generateReasons(userProfile, rankedCandidates);
-                console.log(`✅ AI generated reasons for ${Object.keys(reasons).length} schemes`);
-            } catch (aiError) {
-                console.error('⚠️ AI failed, falling back to logic mode:', aiError);
-            }
-        } else {
-            console.log('⚙️ Logic Mode: Using rule-based recommendations (USE_AI=false)');
-        }
-
-        const finalResults = rankedCandidates.map(s => ({
-            ...s,
-            matchReason: reasons[s.id] || "Your profile strongly aligns with the objectives of this specialized scheme."
+        // Transform to UI format first
+        const mappedCandidates = top15.map((s: any) => ({
+            id: s.id.toString(),
+            title: s.scheme_name || "Unknown",
+            description: (s.details || "").substring(0, 300),
+            category: s.schemeCategory || "Other",
+            state: s.level || "Central",
+            benefits: (s.benefits || "").substring(0, 200),
+            matchScore: nicheMatches.includes(s) ? 85 : 60,
+            status: 'active'
         }));
+
+        // Generate AI reasons
+        let reasons: Record<string, string> = {};
+        try {
+            console.log('🤖 Stage 3: Generating AI reasons for top candidates...');
+            reasons = await AIService.generateReasons(userProfile, mappedCandidates);
+        } catch (aiError) {
+            console.error('⚠️ AI reason generation failed:', aiError);
+        }
+
+        const finalResults = mappedCandidates.map((s: any) => ({
+            ...s,
+            matchReason: reasons[s.id] || `Relevant to your profile as a ${userProfile.occupation} in ${userState}.`
+        }));
+
+        console.log(`  Stage 3: Returning ${finalResults.length} final recommendations`);
 
         return NextResponse.json(finalResults);
 

@@ -133,35 +133,31 @@ export class AIService {
     }
 
     /**
-     * Generates short reasons for specific schemes (lighter & faster).
+     * Generates short reasons for specific schemes via Python FastAPI.
      */
     static async generateReasons(userProfile: any, schemes: any[]): Promise<Record<string, string>> {
-        // Ultra-minimal payload
-        const simplifiedSchemes = schemes.map(s => ({
-            id: s.id,
-            title: s.title,
-            benefits: s.benefits
-        }));
-
-        const prompt = `
-        User Profile: ${userProfile.occupation}, ${userProfile.income}, ${userProfile.category}, ${userProfile.location}.
-        
-        Schemes:
-        ${JSON.stringify(simplifiedSchemes)}
-        
-        Task: For each scheme, write ONE short sentence (max 15 words) explaining why it fits this user.
-        
-        Output strictly as JSON:
-        {
-            "scheme_id_1": "Reason text...",
-            "scheme_id_2": "Reason text..."
-        }
-        `;
-
         try {
-            const responseText = await this.queryOllama(prompt, DEFAULT_MODEL, 'json');
-            const cleanJson = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
-            return JSON.parse(cleanJson);
+            const response = await fetch("http://127.0.0.1:8000/api/generate-reasons", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    user_profile: {
+                        occupation: userProfile.occupation,
+                        annualIncome: userProfile.annualIncome,
+                        state: userProfile.state,
+                        caste: userProfile.caste,
+                        location: userProfile.location
+                    },
+                    schemes: schemes.map(s => ({
+                        id: s.id,
+                        title: s.title,
+                        benefits: s.benefits
+                    }))
+                }),
+            });
+
+            if (!response.ok) return {};
+            return await response.json();
         } catch (e) {
             console.error('Reason generation failed:', e);
             return {};

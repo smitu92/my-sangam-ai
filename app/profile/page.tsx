@@ -19,11 +19,9 @@ export default function ProfilePage() {
         savedSchemes: (user as any).savedSchemes || []
     };
 
-    // Very basic check: if mobile is missing, assume profile is incomplete
-    // In a real app, use a dedicated 'isProfileComplete' flag
-    if (!user.mobile) {
-        // We can do this check here or in a useEffect
-        // Returning null or loader to prevent flash
+    // Check profile completeness using Prisma fields (state is required during registration)
+    // If state is missing, the user hasn't completed profile setup yet
+    if (!user.state) {
         if (typeof window !== "undefined") {
             window.location.href = "/profile/setup";
         }
@@ -61,19 +59,19 @@ export default function ProfilePage() {
                             </div>
 
                             <p className="text-slate-400 font-medium mb-6 flex items-center justify-center md:justify-start gap-2">
-                                <span>📍 {user.location || "Location Not Set"}</span>
+                                <span>📍 {user.state ? `${user.district || ""}, ${user.state}` : "Location Not Set"}</span>
                                 <span>•</span>
-                                <span>🎂 {user.dob ? `${new Date().getFullYear() - new Date(user.dob).getFullYear()} Years Old` : "Age Not Set"}</span>
+                                <span>🎂 {user.age ? `${user.age} Years Old` : "Age Not Set"}</span>
                             </p>
 
                             <div className="flex flex-wrap gap-4 justify-center md:justify-start">
                                 <div className="bg-white/5 backdrop-blur-sm px-5 py-2.5 rounded-xl border border-white/10 text-sm hover:bg-white/10 transition-colors">
                                     <span className="block text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-0.5">Annual Income</span>
-                                    <span className="font-bold text-white text-lg">₹{user.income || "N/A"}</span>
+                                    <span className="font-bold text-white text-lg">₹{user.annualIncome ? user.annualIncome.toLocaleString("en-IN") : "N/A"}</span>
                                 </div>
                                 <div className="bg-white/5 backdrop-blur-sm px-5 py-2.5 rounded-xl border border-white/10 text-sm hover:bg-white/10 transition-colors">
                                     <span className="block text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-0.5">Social Category</span>
-                                    <span className="font-bold text-white text-lg">{user.category || "General"}</span>
+                                    <span className="font-bold text-white text-lg">{user.caste || "General"}</span>
                                 </div>
                                 <div className="bg-white/5 backdrop-blur-sm px-5 py-2.5 rounded-xl border border-white/10 text-sm hover:bg-white/10 transition-colors">
                                     <span className="block text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-0.5">Verifier ID</span>

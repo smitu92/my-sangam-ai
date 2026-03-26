@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, Suspense } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { useSearchParams, usePathname, useRouter } from "next/navigation";
 import {
     Search,
     ChevronLeft,
@@ -28,73 +29,177 @@ interface Scheme {
     matchReason?: string;
 }
 
+// We need a wrapper inside Suspense for searchParams in Next.js
 export default function SchemesPage() {
+    return (
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div></div>}>
+            <SchemesContent />
+        </Suspense>
+    );
+}
+
+function SchemesContent() {
     const { user } = useAuth();
     const [schemes, setSchemes] = useState<Scheme[]>([]);
     const [allRecommendations, setAllRecommendations] = useState<Scheme[]>([]);
     const [recommendations, setRecommendations] = useState<Scheme[]>([]);
     const [loading, setLoading] = useState(true);
     const [recLoading, setRecLoading] = useState(false);
-    const [activeCategory, setActiveCategory] = useState<string>("All");
-    const [searchQuery, setSearchQuery] = useState("");
+    const searchParams = useSearchParams();
+    const router = useRouter();
+    const pathname = usePathname();
+    
+    // Default to search parameters if available
+    const [activeCategory, setActiveCategory] = useState<string>(searchParams.get('category') || "All");
+    const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || "");
+    const [searchMode, setSearchMode] = useState(searchParams.get('mode') || "title");
+    const [filterLevel, setFilterLevel] = useState(searchParams.get('level') || "All");
+    const [filterState, setFilterState] = useState(searchParams.get('state') || "All");
+    const [filterCaste, setFilterCaste] = useState(searchParams.get('caste') || "All");
+    const [currentPage, setCurrentPage] = useState(parseInt(searchParams.get('page') || "1"));
     const schemesSectionRef = useRef<HTMLDivElement>(null);
-
-    // Pagination state
-    const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [totalSchemes, setTotalSchemes] = useState(0);
     const limit = 6; // Items per page
 
+    const indianStates = [
+        "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh", 
+        "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jharkhand", 
+        "Karnataka", "Kerala", "Madhya Pradesh", "Maharashtra", "Manipur", 
+        "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Punjab", "Rajasthan", 
+        "Sikkim", "Tamil Nadu", "Telangana", "Tripura", "Uttar Pradesh", 
+        "Uttarakhand", "West Bengal"
+    ];
+
+    // Memory cache reference to avoid constant sessionStorage parsing
+    const cacheRef = useRef<Record<string, any>>({});
+
+    // Sync URL changes to React State when user presses browser Back/Forward
+    useEffect(() => {
+        const cat = searchParams.get('category') || "All";
+        const page = parseInt(searchParams.get('page') || "1");
+        const search = searchParams.get('search') || "";
+        const mode = searchParams.get('mode') || "title";
+        const level = searchParams.get('level') || "All";
+        const state = searchParams.get('state') || "All";
+        const caste = searchParams.get('caste') || "All";
+        
+        if (cat !== activeCategory) setActiveCategory(cat);
+        if (page !== currentPage) setCurrentPage(page);
+        if (search !== searchQuery) setSearchQuery(search);
+        if (mode !== searchMode) setSearchMode(mode);
+        if (level !== filterLevel) setFilterLevel(level);
+        if (state !== filterState) setFilterState(state);
+        if (caste !== filterCaste) setFilterCaste(caste);
+    }, [searchParams]);
+
+    // Initialize Cache from SessionStorage on Mount
+    useEffect(() => {
+        try {
+            const stored = sessionStorage.getItem('schemesDataCache');
+            if (stored) {
+                cacheRef.current = JSON.parse(stored);
+                
+                // Optional: hydrate initial state if matches default
+                const initialKey = `${activeCategory}-${currentPage}-${searchQuery}`;
+                if (cacheRef.current[initialKey] && schemes.length === 0) {
+                    setSchemes(cacheRef.current[initialKey].schemes);
+                    setTotalPages(cacheRef.current[initialKey].totalPages);
+                    setTotalSchemes(cacheRef.current[initialKey].totalSchemes);
+                    setLoading(false);
+                }
+            }
+        } catch (e) {
+            console.error("Cache parsing error", e);
+        }
+    }, [activeCategory, currentPage, searchQuery, schemes.length]);
+
     // Fetch Schemes with Pagination and Filtering
     useEffect(() => {
+        let isCancelled = false;
+
         const fetchSchemes = async () => {
+            const cacheKey = `${activeCategory}-${currentPage}-${searchQuery}-${searchMode}-${filterLevel}-${filterCaste}`;
+            
+            // 1. Check Memory Cache
+            const cachedData = cacheRef.current[cacheKey];
+            if (cachedData && cachedData.schemes && cachedData.schemes.length > 0) {
+                setSchemes(cachedData.schemes);
+                setTotalPages(cachedData.totalPages);
+                setTotalSchemes(cachedData.totalSchemes);
+                setLoading(false);
+                return; // Cache Hit!
+            }
+
+            // 2. Not in cache -> Fetch
             setLoading(true);
             try {
-                const query = new URLSearchParams({
-                    category: activeCategory !== "All" ? activeCategory : "",
-                    page: currentPage.toString(),
-                    limit: limit.toString(),
-                    search: searchQuery
-                });
-                const res = await fetch(`/api/schemes?${query.toString()}`);
-                const data = await res.json();
-                if (data.schemes) {
+                let data;
+                if (searchQuery || filterLevel !== 'All' || filterCaste !== 'All') {
+                    // ── ADVANCED SEARCH PATH (v4 Organic) ──
+                    const res = await fetch(`/api/schemes/search/v4`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            query: searchQuery, 
+                            mode: searchMode,
+                            level: filterLevel === 'State' ? filterState : (filterLevel === 'Center' ? 'Central' : 'All'),
+                            caste: filterCaste,
+                            limit: 20 
+                        })
+                    });
+                    const results = await res.json();
+                    data = {
+                        schemes: Array.isArray(results) ? results : [],
+                        pagination: { total: results.length || 0, totalPages: 1 }
+                    };
+                } else {
+                    // ── STANDARD CATEGORY/PAGINATION PATH ──
+                    const query = new URLSearchParams({
+                        category: activeCategory !== "All" ? activeCategory : "",
+                        page: currentPage.toString(),
+                        limit: limit.toString(),
+                        search: ""
+                    });
+                    const res = await fetch(`/api/schemes?${query.toString()}`);
+                    data = await res.json();
+                }
+                
+                if (!isCancelled && data.schemes && Array.isArray(data.schemes)) {
                     setSchemes(data.schemes);
-                    setTotalPages(data.pagination.totalPages);
-                    setTotalSchemes(data.pagination.total);
+                    setTotalPages(data.pagination.totalPages || 1);
+                    setTotalSchemes(data.pagination.total || 0);
+                    
+                    // Save to Cache Map
+                    cacheRef.current[cacheKey] = {
+                        schemes: data.schemes,
+                        totalPages: data.pagination.totalPages || 1,
+                        totalSchemes: data.pagination.total || 0
+                    };
+                    sessionStorage.setItem('schemesDataCache', JSON.stringify(cacheRef.current));
                 }
             } catch (error) {
                 console.error("Failed to fetch schemes", error);
             } finally {
-                setLoading(false);
+                if (!isCancelled) {
+                    setLoading(false);
+                }
             }
         };
 
         fetchSchemes();
+
+        return () => {
+            isCancelled = true;
+        };
     }, [activeCategory, currentPage, searchQuery]);
-
-    // Randomize 3 schemes from the pool
-    const rotateRecommendations = useCallback(() => {
-        if (allRecommendations.length === 0) return;
-
-        setRecLoading(true);
-        // Simulate a small delay for better UX (so user sees the refresh happen)
-        setTimeout(() => {
-            const shuffled = [...allRecommendations].sort(() => 0.5 - Math.random());
-            setRecommendations(shuffled.slice(0, 3));
-            setRecLoading(false);
-        }, 400);
-    }, [allRecommendations]);
 
     // Fetch Recommendations (Pool of 20)
     const fetchRecommendations = useCallback(async (forceRefresh = false) => {
-        if (!user?.id) return;
+        if (!user?.userId) return;
 
         setRecLoading(true);
-        // Artificial Delay for UX (10 seconds) - Ensure this runs every time
-        await new Promise(resolve => setTimeout(resolve, 10000));
-
-        const cacheKey = `recs_pool_${user.id}`;
+        const cacheKey = `recs_pool_${user.userId}`;
 
         // 1. Try to load from Local Storage first
         if (!forceRefresh) {
@@ -105,6 +210,11 @@ export default function SchemesPage() {
                     // 24 hour cache for the pool
                     if ((Date.now() - parsed.timestamp) < 86400000) {
                         setAllRecommendations(parsed.data);
+                        // If recommendations are empty, pick 3 immediately
+                        if (recommendations.length === 0) {
+                            const shuffled = [...parsed.data].sort(() => 0.5 - Math.random());
+                            setRecommendations(shuffled.slice(0, 3));
+                        }
                         setRecLoading(false);
                         return; // Found in cache
                     }
@@ -116,11 +226,20 @@ export default function SchemesPage() {
 
         // 2. Fetch from API if no cache or force refresh
         try {
-            const res = await fetch("/api/schemes/recommend");
+            // Note: Add a timestamp query param to bypass any browser/Vercel edge caching
+            const res = await fetch(`/api/schemes/recommend/v2?t=${Date.now()}`, {
+                cache: 'no-store', // Explicitly tell the browser not to cache
+                headers: { 'Cache-Control': 'no-cache' }
+            });
             if (res.ok) {
                 const data = await res.json();
                 const pool = data || [];
                 setAllRecommendations(pool);
+                
+                // Immediately update the visible recommendations with the NEW data
+                const shuffled = [...pool].sort(() => 0.5 - Math.random());
+                setRecommendations(shuffled.slice(0, 3));
+
                 localStorage.setItem(cacheKey, JSON.stringify({
                     data: pool,
                     timestamp: Date.now()
@@ -131,32 +250,21 @@ export default function SchemesPage() {
         } finally {
             setRecLoading(false);
         }
-    }, [user?.id]);
+    }, [user?.userId]); // Removed recommendations.length dependency
 
     // Initial Load
     useEffect(() => {
-        fetchRecommendations();
-    }, [fetchRecommendations]);
-
-    // Whenever we have a new pool of recommendations, rotate to show 3
-    useEffect(() => {
-        if (allRecommendations.length > 0) {
-            // Only rotate if we don't have recommendations shown yet OR if we just fetched a new pool
-            // Actually, we want to rotate on mount if we have data.
-            // Since allRecommendations is set on mount (from cache or api), this will trigger.
-            // But we don't want to infinite loop.
-            // Let's just check if recommendations is empty?
-            // No, because user might want to refresh.
-            // The rotateRecommendations function relies on allRecommendations.
-
-            // If recommendations are empty, definitely rotate.
-            if (recommendations.length === 0) {
-                // Inline rotation to avoid double-loading state
-                const shuffled = [...allRecommendations].sort(() => 0.5 - Math.random());
-                setRecommendations(shuffled.slice(0, 3));
-            }
+        if (user?.userId) {
+            fetchRecommendations();
         }
-    }, [allRecommendations, recommendations.length]);
+    }, [user?.userId, fetchRecommendations]);
+
+    // Randomize 3 schemes from the pool or force a fresh LLM fetch
+    const rotateRecommendations = useCallback(async () => {
+        setRecLoading(true);
+        await fetchRecommendations(true);
+        setRecLoading(false);
+    }, [fetchRecommendations]);
 
     const categoryList = [
         { name: "All", label: "All Schemes", icon: LayoutGrid },
@@ -170,19 +278,29 @@ export default function SchemesPage() {
     ];
 
     const handleCategoryChange = (val: string) => {
-        setActiveCategory(val);
-        setCurrentPage(1);
+        const params = new URLSearchParams(searchParams.toString());
+        if (val !== "All") params.set('category', val);
+        else params.delete('category');
+        params.set('page', '1');
+        router.push(`${pathname}?${params.toString()}`, { scroll: false });
     };
 
     const handlePageChange = (page: number) => {
         if (page < 1 || page > totalPages) return;
-        setCurrentPage(page);
-        if (schemesSectionRef.current) {
-            const yOffset = -100;
-            const element = schemesSectionRef.current;
-            const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
-            window.scrollTo({ top: y, behavior: 'smooth' });
-        }
+        const params = new URLSearchParams(searchParams.toString());
+        params.set('page', page.toString());
+        router.push(`${pathname}?${params.toString()}`, { scroll: false });
+    };
+
+    const submitSearch = () => {
+        const params = new URLSearchParams(searchParams.toString());
+        if (searchQuery) params.set('search', searchQuery); else params.delete('search');
+        params.set('mode', searchMode);
+        params.set('level', filterLevel);
+        params.set('state', filterState);
+        params.set('caste', filterCaste);
+        params.set('page', '1');
+        router.push(`${pathname}?${params.toString()}`, { scroll: false });
     };
 
     const getPageNumbers = () => {
@@ -327,28 +445,102 @@ export default function SchemesPage() {
                     </div>
                 </div>
 
-                {/* Moved Search Bar */}
-                <div className="mb-12">
-                    <div className="relative max-w-2xl mx-auto group">
-                        <div className="relative bg-white border-2 border-gray-100 rounded-2xl p-2 flex items-center shadow-lg hover:shadow-xl hover:border-gray-200 transition-all">
+                {/* 4. SEARCH BAR SECTION (v4 Advanced Filters) */}
+                <div className="mb-12 bg-white p-8 rounded-[2rem] border-2 border-gray-100 shadow-2xl">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                        
+                        {/* 1. Level Filter */}
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-2">Level / Geographic</label>
+                            <div className="flex gap-2">
+                                <select
+                                    value={filterLevel}
+                                    onChange={(e) => {
+                                        setFilterLevel(e.target.value);
+                                        if (e.target.value !== 'State') setFilterState('All');
+                                    }}
+                                    className="flex-1 bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm font-bold text-gray-700 focus:ring-2 focus:ring-gray-900 transition-all outline-none"
+                                >
+                                    <option value="All">All Levels</option>
+                                    <option value="Center">Central Government</option>
+                                    <option value="State">Specific State</option>
+                                </select>
+                                
+                                {filterLevel === 'State' && (
+                                    <select
+                                        value={filterState}
+                                        onChange={(e) => setFilterState(e.target.value)}
+                                        className="flex-1 bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm font-bold text-gray-700 focus:ring-2 focus:ring-gray-900 transition-all outline-none animate-in fade-in slide-in-from-left-2"
+                                    >
+                                        <option value="All">Select State</option>
+                                        {indianStates.map(s => <option key={s} value={s}>{s}</option>)}
+                                    </select>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* 2. social category Filter */}
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-2">Social Category</label>
+                            <select
+                                value={filterCaste}
+                                onChange={(e) => setFilterCaste(e.target.value)}
+                                className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm font-bold text-gray-700 focus:ring-2 focus:ring-gray-900 transition-all outline-none"
+                            >
+                                <option value="All">All Categories</option>
+                                <option value="General">General</option>
+                                <option value="OBC">OBC</option>
+                                <option value="SC">SC</option>
+                                <option value="ST">ST</option>
+                                <option value="PWD">PWD (Divyangjan)</option>
+                            </select>
+                        </div>
+
+                        {/* 3. Search Mode */}
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-2">Search Logic</label>
+                            <div className="flex bg-gray-50 p-1 rounded-xl border border-gray-100">
+                                <button
+                                    onClick={() => setSearchMode('title')}
+                                    className={`flex-1 py-2 text-[10px] font-black uppercase rounded-lg transition-all ${searchMode === 'title' ? 'bg-gray-900 text-white shadow-lg' : 'text-gray-400 hover:text-gray-900'}`}
+                                >
+                                    Fuzzy Title
+                                </button>
+                                <button
+                                    onClick={() => setSearchMode('details')}
+                                    className={`flex-1 py-2 text-[10px] font-black uppercase rounded-lg transition-all ${searchMode === 'details' ? 'bg-gray-900 text-white shadow-lg' : 'text-gray-400 hover:text-gray-900'}`}
+                                >
+                                    Semantic Details
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    {/* Main Search Input */}
+                    <div className="relative group">
+                        <div className="relative bg-gray-50 border-2 border-gray-100 rounded-2xl p-2 flex items-center hover:border-gray-200 transition-all">
                             <Search className="w-6 h-6 text-gray-400 ml-4" />
                             <input
                                 type="text"
-                                placeholder="Search for schemes (e.g. 'Student Scholarship')..."
+                                placeholder={
+                                    searchMode === 'title' ? "Search by exact or fuzzy title (e.g. Mukhyamantri)..." :
+                                    "Search by details/benefits (e.g. 12th students scholarship)..."
+                                }
                                 className="w-full bg-transparent border-none focus:ring-0 text-gray-900 placeholder-gray-400 px-4 py-3 text-lg font-medium"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 onKeyDown={(e) => {
                                     if (e.key === 'Enter') {
-                                        setCurrentPage(1);
+                                        submitSearch();
                                     }
                                 }}
                             />
                             <button
-                                onClick={() => setCurrentPage(1)}
-                                className="bg-gray-900 text-white px-8 py-3 rounded-xl font-bold hover:bg-gray-800 transition-colors shadow-lg shadow-gray-900/20"
+                                onClick={submitSearch}
+                                className="bg-gray-900 text-white px-10 py-4 rounded-xl font-black text-sm uppercase tracking-widest hover:bg-gray-800 transition-colors shadow-xl shadow-gray-900/20"
                             >
-                                Search
+                                Apply Filters
                             </button>
                         </div>
                     </div>
@@ -372,6 +564,11 @@ export default function SchemesPage() {
                     {loading ? (
                         <div className="grid md:grid-cols-2 gap-6">
                             {[1, 2, 3, 4].map(n => <div key={n} className="bg-white rounded-3xl h-80 animate-pulse border border-gray-100"></div>)}
+                        </div>
+                    ) : schemes.length === 0 ? (
+                        <div className="bg-white border border-gray-200 rounded-2xl p-10 text-center mb-12">
+                            <p className="text-gray-500 text-lg font-bold">No schemes found.</p>
+                            <p className="text-gray-400 text-sm mt-2">Try selecting a different category or clearing your search.</p>
                         </div>
                     ) : (
                         <div className="grid md:grid-cols-2 gap-6 mb-12">

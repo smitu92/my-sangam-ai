@@ -1,7 +1,4 @@
-
-import { db } from "@/db";
-import { schemes } from "@/db/schemas/scheme";
-import { desc, eq, count, and, or, ilike } from "drizzle-orm";
+import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { AIService } from "@/lib/ai-service";
 
@@ -15,87 +12,75 @@ export async function GET(req: Request) {
     const offset = (page - 1) * limit;
     const useAI = process.env.USE_AI === 'true';
 
-    // 1. Build where clause
-    const conditions = [];
+    // Build Prisma Where Clause
+    let whereClause: any = {};
 
     if (category && category !== "All") {
-      conditions.push(eq(schemes.category, category));
+      whereClause.schemeCategory = {
+        contains: category,
+        mode: 'insensitive'
+      };
     }
 
     if (search) {
       if (useAI && search.split(' ').length >= 3) {
-        // AI Smart Search: understand natural language queries
-        console.log('🤖 AI Smart Search for:', search);
+        // AI Smart Search Focus
         try {
           const aiResult = await AIService.smartSearch(search);
+          const keywordConditions = aiResult.keywords.map((keyword: string) => ({
+             OR: [
+                { scheme_name: { contains: keyword, mode: 'insensitive' } },
+                { details: { contains: keyword, mode: 'insensitive' } },
+                { benefits: { contains: keyword, mode: 'insensitive' } },
+                { eligibility: { contains: keyword, mode: 'insensitive' } }
+             ]
+          }));
 
-          // Build OR conditions from AI-extracted keywords
-          const keywordConditions = aiResult.keywords.map(keyword =>
-            or(
-              ilike(schemes.title, `%${keyword}%`),
-              ilike(schemes.description, `%${keyword}%`),
-              ilike(schemes.benefits, `%${keyword}%`),
-              ilike(schemes.eligibility, `%${keyword}%`)
-            )
-          );
+          // Always add exact search explicitly
+          keywordConditions.push({
+             OR: [
+                { scheme_name: { contains: search, mode: 'insensitive' } },
+                { details: { contains: search, mode: 'insensitive' } }
+             ]
+          });
 
-          // Also search the original query as fallback
-          keywordConditions.push(
-            or(
-              ilike(schemes.title, `%${search}%`),
-              ilike(schemes.description, `%${search}%`)
-            )
-          );
-
-          conditions.push(or(...keywordConditions));
-
-          // If AI identified a category and user didn't pick one already
-          if (aiResult.category && aiResult.category !== 'All' && (!category || category === 'All')) {
-            // Don't force category filter — let keywords do the broad search
-            // but we log it for debugging
-            console.log('🏷️ AI suggested category:', aiResult.category);
-          }
-
-          console.log(`✅ AI extracted ${aiResult.keywords.length} keywords:`, aiResult.keywords);
-        } catch (aiError) {
-          console.error('⚠️ AI search failed, falling back to basic search:', aiError);
-          // Fallback to basic search
-          conditions.push(
-            or(
-              ilike(schemes.title, `%${search}%`),
-              ilike(schemes.description, `%${search}%`)
-            )
-          );
+          // In Prisma, we use OR for this list of conditions to be broad
+          // Wait, AI keywords usually mean "must match at least one keyword"
+          whereClause.OR = keywordConditions;
+        } catch (error) {
+           whereClause.OR = [
+             { scheme_name: { contains: search, mode: 'insensitive' } },
+             { details: { contains: search, mode: 'insensitive' } }
+           ];
         }
       } else {
-        // Basic keyword search (USE_AI=false or short queries)
-        conditions.push(
-          or(
-            ilike(schemes.title, `%${search}%`),
-            ilike(schemes.description, `%${search}%`)
-          )
-        );
+        whereClause.OR = [
+           { scheme_name: { contains: search, mode: 'insensitive' } },
+           { details: { contains: search, mode: 'insensitive' } }
+        ];
       }
     }
 
-    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+    const [totalCount, rawSchemes] = await Promise.all([
+      prisma.scheme.count({ where: whereClause }),
+      prisma.scheme.findMany({
+        where: whereClause,
+        skip: offset,
+        take: limit,
+        orderBy: { id: "desc" }
+      })
+    ]);
 
-    // 2. Get total count for pagination
-    const totalResult = await db.select({ value: count() }).from(schemes).where(whereClause);
-    const totalCount = totalResult[0].value;
-
-    // 3. Get paginated schemes
-    let query = db.select().from(schemes);
-
-    if (whereClause) {
-      // @ts-ignore
-      query = query.where(whereClause);
-    }
-
-    // @ts-ignore
-    query = query.orderBy(desc(schemes.createdAt)).limit(limit).offset(offset);
-
-    const paginatedSchemes = await query;
+    // Remap to what the UI strictly expects
+    const paginatedSchemes = rawSchemes.map(s => ({
+       id: s.id.toString(),
+       title: s.scheme_name || "Unknown Scheme",
+       description: s.details || "",
+       category: s.schemeCategory || "Other",
+       state: s.level || "Central",
+       benefits: s.benefits || "",
+       status: 'active'
+    }));
 
     return NextResponse.json(
       {
@@ -106,7 +91,7 @@ export async function GET(req: Request) {
           limit,
           totalPages: Math.ceil(totalCount / limit)
         },
-        aiPowered: useAI && search && search.split(' ').length >= 3
+        aiPowered: useAI && !!search && search.split(' ').length >= 3
       },
       { status: 200 }
     );

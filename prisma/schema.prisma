@@ -145,6 +145,11 @@ model ChatSession {
   updatedAt DateTime @updatedAt
   messages  ChatMessage[]
 
+  // Short-term memory fields
+  buffer   Json   @default("[]")  // last 3 Q&A pairs as JSON array
+  summary  String @default("")    // compressed older history (3 sentences)
+  msgCount Int    @default(0)     @map("msg_count") // triggers summary at every 5th message
+
   @@map("chat_sessions")
 }
 

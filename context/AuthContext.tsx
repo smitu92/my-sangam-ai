@@ -85,9 +85,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         // 1. Check for existing Supabase session on mount
         const checkSession = async () => {
             try {
-                const { data: { user: authUser } } = await supabase.auth.getUser();
-                if (authUser) {
-                    await fetchProfile(authUser.id, authUser.email || "");
+                const { data: { session } } = await supabase.auth.getSession();
+                if (session?.user) {
+                    // Sync cookie on initial load for returning users
+                    document.cookie = `sb-access-token=${session.access_token}; path=/; max-age=86400; SameSite=Lax`;
+                    await fetchProfile(session.user.id, session.user.email || "");
+                } else {
+                    document.cookie = `sb-access-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
                 }
             } catch (error) {
                 console.error("Auth check failed:", error);
@@ -102,9 +106,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const { data: { subscription } } = supabase.auth.onAuthStateChange(
             async (event, session) => {
                 if (event === "SIGNED_IN" && session?.user) {
+                    // Manually sync session to cookies so middleware can see it without SSR package
+                    document.cookie = `sb-access-token=${session.access_token}; path=/; max-age=86400; SameSite=Lax`;
                     await fetchProfile(session.user.id, session.user.email || "");
                 } else if (event === "SIGNED_OUT") {
+                    document.cookie = `sb-access-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
                     setUser(null);
+                } else if (event === "TOKEN_REFRESHED" && session?.access_token) {
+                    document.cookie = `sb-access-token=${session.access_token}; path=/; max-age=86400; SameSite=Lax`;
                 }
             }
         );
