@@ -12,7 +12,10 @@
     "lint": "eslint",
     "prisma:generate": "npx prisma generate",
     "prisma:push": "npx prisma db push",
-    "db:seed": "npx tsx scripts/seed-schemes.ts"
+    "db:seed": "npx tsx scripts/seed-schemes.ts",
+    "test:api": "vitest run",
+    "test:flows": "npx playwright test",
+    "test": "npm run test:api && npm run test:flows"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.5.0",
@@ -29,17 +32,23 @@
     "react-dom": "19.2.3"
   },
   "devDependencies": {
+    "@playwright/test": "^1.58.2",
     "@tailwindcss/postcss": "^4",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
     "@types/node": "^20.19.37",
     "@types/papaparse": "^5.5.2",
     "@types/pg": "^8.16.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^6.0.1",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
+    "jsdom": "^29.0.1",
     "prisma": "^7.5.0",
     "tailwindcss": "^4",
     "tsx": "^4.21.0",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.2"
   }
 }

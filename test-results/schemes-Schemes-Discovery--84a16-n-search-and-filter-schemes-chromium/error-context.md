@@ -1,0 +1,156 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - navigation [ref=e2]:
+    - generic [ref=e4]:
+      - link "Sangam" [ref=e5] [cursor=pointer]:
+        - /url: /
+        - img [ref=e7]
+        - generic [ref=e10]: Sangam
+      - generic [ref=e11]:
+        - link "Home" [ref=e12] [cursor=pointer]:
+          - /url: /
+        - link "Schemes" [ref=e13] [cursor=pointer]:
+          - /url: /schemes
+        - link "Loans" [ref=e14] [cursor=pointer]:
+          - /url: /loans
+        - link "News" [ref=e15] [cursor=pointer]:
+          - /url: /news
+      - link "Login" [ref=e17] [cursor=pointer]:
+        - /url: /login
+  - generic:
+    - generic:
+      - generic:
+        - generic:
+          - generic: S
+          - generic: Sangam
+        - button:
+          - img
+      - generic:
+        - link "🏠 Home":
+          - /url: /
+          - generic: 🏠
+          - text: Home
+        - link "📜 Schemes":
+          - /url: /schemes
+          - generic: 📜
+          - text: Schemes
+        - link "💸 Loans":
+          - /url: /loans
+          - generic: 💸
+          - text: Loans
+        - link "📰 News":
+          - /url: /news
+          - generic: 📰
+          - text: News
+      - generic:
+        - link "Login":
+          - /url: /login
+  - main [ref=e19]:
+    - generic [ref=e21]:
+      - generic [ref=e24]: National Portal
+      - heading "Discover Your Perfect Scheme" [level=1] [ref=e25]:
+        - text: Discover Your
+        - text: Perfect Scheme
+      - paragraph [ref=e26]: Access over 110+ government opportunities tailored to your profile. AI-powered matching ensures you never miss a benefit.
+    - generic [ref=e27]:
+      - generic [ref=e28]:
+        - generic [ref=e30]:
+          - heading "Explore Categories" [level=2] [ref=e31]
+          - paragraph [ref=e32]: Browse our curated collection
+        - generic [ref=e33]:
+          - button "All Schemes" [ref=e34]:
+            - img [ref=e36]
+            - generic [ref=e41]: All Schemes
+          - button "Education" [ref=e42]:
+            - img [ref=e44]
+            - generic [ref=e47]: Education
+          - button "Housing" [ref=e48]:
+            - img [ref=e50]
+            - generic [ref=e53]: Housing
+          - button "Agriculture" [ref=e54]:
+            - img [ref=e56]
+            - generic [ref=e59]: Agriculture
+          - button "Health" [ref=e60]:
+            - img [ref=e62]
+            - generic [ref=e65]: Health
+          - button "Business" [ref=e66]:
+            - img [ref=e68]
+            - generic [ref=e71]: Business
+          - button "Finance" [ref=e72]:
+            - img [ref=e74]
+            - generic [ref=e79]: Finance
+          - button "Social" [ref=e80]:
+            - img [ref=e82]
+            - generic [ref=e87]: Social
+      - generic [ref=e88]:
+        - generic [ref=e89]:
+          - generic [ref=e90]:
+            - text: Level / Geographic
+            - combobox [ref=e92]:
+              - option "All Levels" [selected]
+              - option "Central Government"
+              - option "Specific State"
+          - generic [ref=e93]:
+            - text: Social Category
+            - combobox [ref=e94]:
+              - option "All Categories" [selected]
+              - option "General"
+              - option "OBC"
+              - option "SC"
+              - option "ST"
+              - option "PWD (Divyangjan)"
+          - generic [ref=e95]:
+            - text: Search Logic
+            - generic [ref=e96]:
+              - button "Fuzzy Title" [ref=e97]
+              - button "Semantic Details" [ref=e98]
+        - generic [ref=e100]:
+          - img [ref=e101]
+          - textbox "Search by exact or fuzzy title (e.g. Mukhyamantri)..." [ref=e104]
+          - button "Apply Filters" [ref=e105]
+      - heading "All Schemes 0" [level=3] [ref=e110]:
+        - text: All Schemes
+        - generic [ref=e111]: "0"
+  - contentinfo [ref=e117]:
+    - generic [ref=e118]:
+      - generic [ref=e119]:
+        - generic [ref=e120]:
+          - generic [ref=e121] [cursor=pointer]:
+            - generic [ref=e123]: S
+            - generic [ref=e124]: Sangam
+          - paragraph [ref=e125]: Democratizing access to government welfare with AI-powered discovery.
+        - generic [ref=e126]:
+          - heading "Quick Links" [level=4] [ref=e127]
+          - list [ref=e128]:
+            - listitem [ref=e129] [cursor=pointer]:
+              - link "About Us" [ref=e130]:
+                - /url: /about
+            - listitem [ref=e131] [cursor=pointer]:
+              - link "Contact" [ref=e132]:
+                - /url: /contact
+            - listitem [ref=e133] [cursor=pointer]:
+              - link "Privacy Policy" [ref=e134]:
+                - /url: /privacy
+        - generic [ref=e135]:
+          - heading "Resources" [level=4] [ref=e136]
+          - list [ref=e137]:
+            - listitem [ref=e138] [cursor=pointer]: India.gov.in
+            - listitem [ref=e139] [cursor=pointer]: Digital India
+            - listitem [ref=e140] [cursor=pointer]: PMO India
+        - generic [ref=e141]:
+          - heading "Stay Updated" [level=4] [ref=e142]
+          - generic [ref=e143]:
+            - textbox "Email" [ref=e144]
+            - button "Go" [ref=e145]
+      - generic [ref=e146]:
+        - paragraph [ref=e147]: © 2024 Sangam AI.
+        - paragraph [ref=e148]:
+          - text: Made with
+          - generic [ref=e149]: ❤️
+          - text: for India
+  - button "Open Next.js Dev Tools" [ref=e155] [cursor=pointer]:
+    - img [ref=e156]
+  - alert [ref=e159]
+```

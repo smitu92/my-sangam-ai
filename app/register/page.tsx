@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 
 /* ── Enum options (mirror prisma/zod/Userprofile.schema.ts) ── */
 const GENDERS = ["Male", "Female", "Other"] as const;
@@ -115,10 +116,10 @@ const selectCls = inputCls + " appearance-none";
 const labelCls = "block text-sm font-bold text-gray-700 mb-2";
 const errorCls = "text-red-500 text-xs mt-1 font-semibold";
 
-function Field({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) {
+function Field({ label, error, id, children }: { label: string; error?: string; id?: string; children: React.ReactNode }) {
     return (
         <div>
-            <label className={labelCls}>{label}</label>
+            <label htmlFor={id} className={labelCls}>{label}</label>
             {children}
             {error && <p className={errorCls}>{error}</p>}
         </div>
@@ -133,6 +134,7 @@ export default function RegisterPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [apiError, setApiError] = useState("");
     const router = useRouter();
+    const { login } = useAuth();
 
     const set = (k: keyof FormData, v: any) => setForm(prev => ({ ...prev, [k]: v }));
 
@@ -222,16 +224,25 @@ export default function RegisterPage() {
                 throw new Error(data.message || "Registration failed");
             }
 
-            // Auto-login
-            const loginRes = await fetch("/api/auth/login", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email: form.email, password: form.password }),
-            });
+            // Wait 1s for Supabase propagation (especially after admin.createUser)
+            await new Promise(resolve => setTimeout(resolve, 1000));
 
-            if (loginRes.ok) {
+            // Auto-login using AuthContext (correct way)
+            const loginEmail = form.email;
+            const loginPass = form.password;
+            let loginRes = await login(loginEmail, loginPass);
+
+            // Retry once if it fails (propagation can be slow)
+            if (loginRes.error) {
+                console.log("Auto-login retry 1...");
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                loginRes = await login(form.email, form.password);
+            }
+
+            if (!loginRes.error) {
                 router.push("/profile");
             } else {
+                console.error("Auto-login failed after retry:", loginRes.error);
                 router.push("/login?message=Account created, please login");
             }
         } catch (err: any) {
@@ -280,14 +291,14 @@ export default function RegisterPage() {
                         {/* ── STEP 1: Account ────────────────────── */}
                         {step === 1 && (
                             <>
-                                <Field label="Full Name" error={errors.name}>
-                                    <input name="name" type="text" className={inputCls} placeholder="Smit Patel" value={form.name} onChange={e => set("name", e.target.value)} />
+                                <Field label="Full Name" error={errors.name} id="reg-name">
+                                    <input id="reg-name" name="name" type="text" className={inputCls} placeholder="Smit Patel" value={form.name} onChange={e => set("name", e.target.value)} />
                                 </Field>
-                                <Field label="Email Address" error={errors.email}>
-                                    <input name="email" type="email" className={inputCls} placeholder="you@example.com" value={form.email} onChange={e => set("email", e.target.value)} />
+                                <Field label="Email Address" error={errors.email} id="reg-email">
+                                    <input id="reg-email" name="email" type="email" className={inputCls} placeholder="you@example.com" value={form.email} onChange={e => set("email", e.target.value)} />
                                 </Field>
-                                <Field label="Password" error={errors.password}>
-                                    <input name="password" type="password" className={inputCls} placeholder="Min 6 characters" value={form.password} onChange={e => set("password", e.target.value)} />
+                                <Field label="Password" error={errors.password} id="reg-password">
+                                    <input id="reg-password" name="password" type="password" className={inputCls} placeholder="Min 6 characters" value={form.password} onChange={e => set("password", e.target.value)} />
                                 </Field>
                             </>
                         )}
@@ -296,32 +307,32 @@ export default function RegisterPage() {
                         {step === 2 && (
                             <>
                                 <div className="grid grid-cols-2 gap-4">
-                                    <Field label="Age" error={errors.age}>
-                                        <input type="number" className={inputCls} placeholder="25" value={form.age} onChange={e => set("age", e.target.value)} />
+                                    <Field label="Age" error={errors.age} id="reg-age">
+                                        <input id="reg-age" type="number" className={inputCls} placeholder="25" value={form.age} onChange={e => set("age", e.target.value)} />
                                     </Field>
-                                    <Field label="Gender" error={errors.gender}>
-                                        <select className={selectCls} value={form.gender} onChange={e => set("gender", e.target.value)}>
+                                    <Field label="Gender" error={errors.gender} id="reg-gender">
+                                        <select id="reg-gender" className={selectCls} value={form.gender} onChange={e => set("gender", e.target.value)}>
                                             <option value="">Select...</option>
                                             {GENDERS.map(g => <option key={g} value={g}>{g}</option>)}
                                         </select>
                                     </Field>
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
-                                    <Field label="State" error={errors.state}>
-                                        <input type="text" className={inputCls} placeholder="Gujarat" value={form.state} onChange={e => set("state", e.target.value)} />
+                                    <Field label="State" error={errors.state} id="reg-state">
+                                        <input id="reg-state" type="text" className={inputCls} placeholder="Gujarat" value={form.state} onChange={e => set("state", e.target.value)} />
                                     </Field>
-                                    <Field label="District" error={errors.district}>
-                                        <input type="text" className={inputCls} placeholder="Ahmedabad" value={form.district} onChange={e => set("district", e.target.value)} />
+                                    <Field label="District" error={errors.district} id="reg-district">
+                                        <input id="reg-district" type="text" className={inputCls} placeholder="Ahmedabad" value={form.district} onChange={e => set("district", e.target.value)} />
                                     </Field>
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
-                                    <Field label="Caste Category" error={errors.caste}>
-                                        <select className={selectCls} value={form.caste} onChange={e => set("caste", e.target.value)}>
+                                    <Field label="Caste Category" error={errors.caste} id="reg-caste">
+                                        <select id="reg-caste" className={selectCls} value={form.caste} onChange={e => set("caste", e.target.value)}>
                                             {CASTES.map(c => <option key={c} value={c}>{humanize(c)}</option>)}
                                         </select>
                                     </Field>
-                                    <Field label="Annual Income (Rs)" error={errors.annualIncome}>
-                                        <input type="number" className={inputCls} placeholder="300000" value={form.annualIncome} onChange={e => set("annualIncome", e.target.value)} />
+                                    <Field label="Annual Income (Rs)" error={errors.annualIncome} id="reg-income">
+                                        <input id="reg-income" type="number" className={inputCls} placeholder="300000" value={form.annualIncome} onChange={e => set("annualIncome", e.target.value)} />
                                     </Field>
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
@@ -349,8 +360,8 @@ export default function RegisterPage() {
                         {/* ── STEP 3: Occupation ──────────────────── */}
                         {step === 3 && (
                             <>
-                                <Field label="Occupation" error={errors.occupation}>
-                                    <select className={selectCls} value={form.occupation} onChange={e => set("occupation", e.target.value)}>
+                                <Field label="Occupation" error={errors.occupation} id="reg-occupation">
+                                    <select id="reg-occupation" className={selectCls} value={form.occupation} onChange={e => set("occupation", e.target.value)}>
                                         <option value="">Select your occupation...</option>
                                         {OCCUPATIONS.map(o => <option key={o} value={o}>{humanize(o)}</option>)}
                                     </select>
@@ -360,28 +371,28 @@ export default function RegisterPage() {
                                 {form.occupation === "Student" && (
                                     <>
                                         <div className="grid grid-cols-2 gap-4">
-                                            <Field label="Education Level" error={errors.educationLevel}>
-                                                <select className={selectCls} value={form.educationLevel} onChange={e => set("educationLevel", e.target.value)}>
+                                            <Field label="Education Level" error={errors.educationLevel} id="reg-edu-level">
+                                                <select id="reg-edu-level" className={selectCls} value={form.educationLevel} onChange={e => set("educationLevel", e.target.value)}>
                                                     <option value="">Select...</option>
                                                     {EDUCATION_LEVELS.map(l => <option key={l} value={l}>{humanize(l)}</option>)}
                                                 </select>
                                             </Field>
-                                            <Field label="Institution Type" error={errors.institutionType}>
-                                                <select className={selectCls} value={form.institutionType} onChange={e => set("institutionType", e.target.value)}>
+                                            <Field label="Institution Type" error={errors.institutionType} id="reg-inst-type">
+                                                <select id="reg-inst-type" className={selectCls} value={form.institutionType} onChange={e => set("institutionType", e.target.value)}>
                                                     <option value="">Select...</option>
                                                     {INSTITUTION_TYPES.map(t => <option key={t} value={t}>{humanize(t)}</option>)}
                                                 </select>
                                             </Field>
                                         </div>
-                                        <Field label="Course Name" error={errors.courseName}>
-                                            <input type="text" className={inputCls} placeholder="e.g. B.Tech CSE" value={form.courseName} onChange={e => set("courseName", e.target.value)} />
+                                        <Field label="Course Name" error={errors.courseName} id="reg-course">
+                                            <input id="reg-course" type="text" className={inputCls} placeholder="e.g. B.Tech CSE" value={form.courseName} onChange={e => set("courseName", e.target.value)} />
                                         </Field>
                                         <div className="grid grid-cols-2 gap-4">
-                                            <Field label="Year of Study" error={errors.yearOfStudy}>
-                                                <input type="number" className={inputCls} placeholder="1-7" value={form.yearOfStudy} onChange={e => set("yearOfStudy", e.target.value)} />
+                                            <Field label="Year of Study" error={errors.yearOfStudy} id="reg-year">
+                                                <input id="reg-year" type="number" className={inputCls} placeholder="1-7" value={form.yearOfStudy} onChange={e => set("yearOfStudy", e.target.value)} />
                                             </Field>
-                                            <Field label="Marks % (Optional)">
-                                                <input type="number" className={inputCls} placeholder="85" value={form.marksPercentage} onChange={e => set("marksPercentage", e.target.value)} />
+                                            <Field label="Marks % (Optional)" id="reg-marks">
+                                                <input id="reg-marks" type="number" className={inputCls} placeholder="85" value={form.marksPercentage} onChange={e => set("marksPercentage", e.target.value)} />
                                             </Field>
                                         </div>
                                     </>
@@ -391,14 +402,14 @@ export default function RegisterPage() {
                                 {(form.occupation === "Teacher" || form.occupation === "Researcher") && (
                                     <>
                                         <div className="grid grid-cols-2 gap-4">
-                                            <Field label="Education Level" error={errors.educationLevel}>
-                                                <select className={selectCls} value={form.educationLevel} onChange={e => set("educationLevel", e.target.value)}>
+                                            <Field label="Education Level" error={errors.educationLevel} id="reg-teacher-edu">
+                                                <select id="reg-teacher-edu" className={selectCls} value={form.educationLevel} onChange={e => set("educationLevel", e.target.value)}>
                                                     <option value="">Select...</option>
                                                     {EDUCATION_LEVELS.map(l => <option key={l} value={l}>{humanize(l)}</option>)}
                                                 </select>
                                             </Field>
-                                            <Field label="Institution Type" error={errors.institutionType}>
-                                                <select className={selectCls} value={form.institutionType} onChange={e => set("institutionType", e.target.value)}>
+                                            <Field label="Institution Type" error={errors.institutionType} id="reg-teacher-inst">
+                                                <select id="reg-teacher-inst" className={selectCls} value={form.institutionType} onChange={e => set("institutionType", e.target.value)}>
                                                     <option value="">Select...</option>
                                                     {INSTITUTION_TYPES.map(t => <option key={t} value={t}>{humanize(t)}</option>)}
                                                 </select>
@@ -417,11 +428,11 @@ export default function RegisterPage() {
                                 {form.occupation === "Farmer" && (
                                     <>
                                         <div className="grid grid-cols-2 gap-4">
-                                            <Field label="Land Size (Acres)" error={errors.landSizeAcres}>
-                                                <input type="number" step="0.1" className={inputCls} placeholder="2.5" value={form.landSizeAcres} onChange={e => set("landSizeAcres", e.target.value)} />
+                                            <Field label="Land Size (Acres)" error={errors.landSizeAcres} id="reg-land-size">
+                                                <input id="reg-land-size" type="number" step="0.1" className={inputCls} placeholder="2.5" value={form.landSizeAcres} onChange={e => set("landSizeAcres", e.target.value)} />
                                             </Field>
-                                            <Field label="Crop Type" error={errors.cropType}>
-                                                <input type="text" className={inputCls} placeholder="Wheat, Rice" value={form.cropType} onChange={e => set("cropType", e.target.value)} />
+                                            <Field label="Crop Type" error={errors.cropType} id="reg-crop-type">
+                                                <input id="reg-crop-type" type="text" className={inputCls} placeholder="Wheat, Rice" value={form.cropType} onChange={e => set("cropType", e.target.value)} />
                                             </Field>
                                         </div>
                                         <div className="flex gap-6">
@@ -497,14 +508,14 @@ export default function RegisterPage() {
                                 {/* Job Seeker */}
                                 {form.occupation === "JobSeeker" && (
                                     <div className="grid grid-cols-2 gap-4">
-                                        <Field label="Education Level" error={errors.educationLevel}>
-                                            <select className={selectCls} value={form.educationLevel} onChange={e => set("educationLevel", e.target.value)}>
+                                        <Field label="Education Level" error={errors.educationLevel} id="reg-job-edu">
+                                            <select id="reg-job-edu" className={selectCls} value={form.educationLevel} onChange={e => set("educationLevel", e.target.value)}>
                                                 <option value="">Select...</option>
                                                 {EDUCATION_LEVELS.map(l => <option key={l} value={l}>{humanize(l)}</option>)}
                                             </select>
                                         </Field>
-                                        <Field label="Experience (Years)">
-                                            <input type="number" className={inputCls} placeholder="0" value={form.experienceYears} onChange={e => set("experienceYears", e.target.value)} />
+                                        <Field label="Experience (Years)" id="reg-job-exp">
+                                            <input id="reg-job-exp" type="number" className={inputCls} placeholder="0" value={form.experienceYears} onChange={e => set("experienceYears", e.target.value)} />
                                         </Field>
                                     </div>
                                 )}

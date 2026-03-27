@@ -1,0 +1,168 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - navigation [ref=e2]:
+    - generic [ref=e4]:
+      - link "Sangam" [ref=e5] [cursor=pointer]:
+        - /url: /
+        - img [ref=e7]
+        - generic [ref=e10]: Sangam
+      - generic [ref=e11]:
+        - link "Home" [ref=e12] [cursor=pointer]:
+          - /url: /
+        - link "Schemes" [ref=e13] [cursor=pointer]:
+          - /url: /schemes
+        - link "Loans" [ref=e14] [cursor=pointer]:
+          - /url: /loans
+        - link "News" [ref=e15] [cursor=pointer]:
+          - /url: /news
+        - link "Dashboard" [ref=e16] [cursor=pointer]:
+          - /url: /profile
+      - button "Reg User 426828 R" [ref=e18]:
+        - generic [ref=e19]: Reg User 426828
+        - generic [ref=e20]: R
+  - generic:
+    - generic:
+      - generic:
+        - generic:
+          - generic: S
+          - generic: Sangam
+        - button:
+          - img
+      - generic:
+        - link "🏠 Home":
+          - /url: /
+          - generic: 🏠
+          - text: Home
+        - link "📜 Schemes":
+          - /url: /schemes
+          - generic: 📜
+          - text: Schemes
+        - link "💸 Loans":
+          - /url: /loans
+          - generic: 💸
+          - text: Loans
+        - link "📰 News":
+          - /url: /news
+          - generic: 📰
+          - text: News
+      - generic:
+        - button "R Reg User 426828 View Profile":
+          - generic: R
+          - generic:
+            - paragraph: Reg User 426828
+            - paragraph: View Profile
+  - main [ref=e22]:
+    - generic [ref=e27]:
+      - generic [ref=e28]:
+        - generic [ref=e29]: 🧔🏽‍♂️
+        - link "✏️" [ref=e30] [cursor=pointer]:
+          - /url: /profile/setup
+      - generic [ref=e31]:
+        - generic [ref=e32]:
+          - heading "Reg User 426828" [level=1] [ref=e33]
+          - generic [ref=e34]: Student
+        - paragraph [ref=e35]:
+          - generic [ref=e36]: 📍 Mumbai, Maharashtra
+          - generic [ref=e37]: •
+          - generic [ref=e38]: 🎂 28 Years Old
+        - generic [ref=e39]:
+          - generic [ref=e40]:
+            - generic [ref=e41]: Annual Income
+            - generic [ref=e42]: ₹4,50,000
+          - generic [ref=e43]:
+            - generic [ref=e44]: Social Category
+            - text: General
+          - generic [ref=e45]:
+            - generic [ref=e46]: Verifier ID
+            - generic [ref=e47]: Unverified
+    - generic [ref=e48]:
+      - heading "Personal & Family Details" [level=2] [ref=e49]
+      - generic [ref=e50]:
+        - generic [ref=e51]:
+          - heading "Contact Information" [level=3] [ref=e52]
+          - generic [ref=e53]:
+            - generic [ref=e54]:
+              - generic [ref=e55]: 📞
+              - generic [ref=e56]:
+                - generic [ref=e57]: Mobile Number
+                - generic [ref=e58]: "--"
+            - generic [ref=e59]:
+              - generic [ref=e60]: 📧
+              - generic [ref=e61]:
+                - generic [ref=e62]: Email Address
+                - generic [ref=e63]: reg-426828@example.com
+        - generic [ref=e64]:
+          - heading "Family Information" [level=3] [ref=e65]
+          - generic [ref=e66]:
+            - generic [ref=e67]:
+              - generic [ref=e68]: 👨🏼
+              - generic [ref=e69]:
+                - generic [ref=e70]: Father's Name
+                - generic [ref=e71]: "--"
+            - generic [ref=e72]:
+              - generic [ref=e73]: 👩🏼
+              - generic [ref=e74]:
+                - generic [ref=e75]: Mother's Name
+                - generic [ref=e76]: "--"
+        - generic [ref=e77]:
+          - heading "Identity Documents" [level=3] [ref=e78]
+          - generic [ref=e79]:
+            - generic [ref=e80]:
+              - generic [ref=e81]:
+                - generic [ref=e82]: AAD
+                - generic [ref=e83]: Aadhar Card
+              - generic [ref=e84]: Missing
+            - generic [ref=e85]:
+              - generic [ref=e86]:
+                - generic [ref=e87]: PAN
+                - generic [ref=e88]: PAN Card
+              - generic [ref=e89]: Missing
+    - generic [ref=e90]:
+      - heading "Scheme Applications" [level=2] [ref=e91]
+      - generic [ref=e92]:
+        - button "Applied Schemes" [ref=e93]
+        - button "Saved Schemes" [ref=e94]
+      - generic [ref=e97]: No schemes applied yet.
+  - contentinfo [ref=e98]:
+    - generic [ref=e99]:
+      - generic [ref=e100]:
+        - generic [ref=e101]:
+          - generic [ref=e102] [cursor=pointer]:
+            - generic [ref=e104]: S
+            - generic [ref=e105]: Sangam
+          - paragraph [ref=e106]: Democratizing access to government welfare with AI-powered discovery.
+        - generic [ref=e107]:
+          - heading "Quick Links" [level=4] [ref=e108]
+          - list [ref=e109]:
+            - listitem [ref=e110] [cursor=pointer]:
+              - link "About Us" [ref=e111]:
+                - /url: /about
+            - listitem [ref=e112] [cursor=pointer]:
+              - link "Contact" [ref=e113]:
+                - /url: /contact
+            - listitem [ref=e114] [cursor=pointer]:
+              - link "Privacy Policy" [ref=e115]:
+                - /url: /privacy
+        - generic [ref=e116]:
+          - heading "Resources" [level=4] [ref=e117]
+          - list [ref=e118]:
+            - listitem [ref=e119] [cursor=pointer]: India.gov.in
+            - listitem [ref=e120] [cursor=pointer]: Digital India
+            - listitem [ref=e121] [cursor=pointer]: PMO India
+        - generic [ref=e122]:
+          - heading "Stay Updated" [level=4] [ref=e123]
+          - generic [ref=e124]:
+            - textbox "Email" [ref=e125]
+            - button "Go" [ref=e126]
+      - generic [ref=e127]:
+        - paragraph [ref=e128]: © 2024 Sangam AI.
+        - paragraph [ref=e129]:
+          - text: Made with
+          - generic [ref=e130]: ❤️
+          - text: for India
+  - button "Open Next.js Dev Tools" [ref=e136] [cursor=pointer]:
+    - img [ref=e137]
+  - alert [ref=e140]
+```

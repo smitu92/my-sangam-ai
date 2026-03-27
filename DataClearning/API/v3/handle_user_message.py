@@ -7,13 +7,12 @@ Frontend uses this to conditionally render scheme cards vs plain text.
 
 import json
 import re
-from API.v2.mistral.ROUTER_PROMPT import ROUTER_PROMPT
+from API.v3.ROUTER_PROMPT import ROUTER_PROMPT
 from API.v2.mistral.GENERATION_PROMPT import GENERATION_PROMPT
 from API.v2.utils.embedding import get_embedding
 from API.v2.mistral.llm import call_mistral_llm
 from API.v2.mistral.pg_vector import search_pgvector
 from API.v2.mistral.short_memory.session import get_session, update_session, format_buffer
-
 
 def handle_user_message(user_message: str, user_profile: dict, chat_history: list, session_id: str = "") -> dict:
     """
@@ -130,12 +129,21 @@ def handle_user_message(user_message: str, user_profile: dict, chat_history: lis
     
     if session:
         conversation_summary = session.get("summary", "") or "This is the start of the conversation."
-        conversation_buffer = format_buffer(session.get("buffer", []))
+        session_buffer = format_buffer(session.get("buffer", []))
+        # Always fall back to passed chat_history if session buffer is empty.
+        # Critical for GENERAL follow-ups where session memory may not exist yet.
+        conversation_buffer = session_buffer if session_buffer.strip() else _format_history(chat_history)
     else:
         conversation_summary = "This is the start of the conversation."
         conversation_buffer = _format_history(chat_history)
     
     # ── CALL 2: Generate answer ──────────────────────────
+    # For GENERAL type: explicitly instruct the LLM to use conversation context
+    if response_type == "GENERAL":
+        user_prompt = "Answer the user's follow-up question using the RECENT CONVERSATION context above. Do NOT say you couldn't find schemes — the user is asking about something already discussed."
+    else:
+        user_prompt = "Provide the final answer to the user query based strictly on the retrieved schemes."
+
     generation_input = GENERATION_PROMPT.format(
         user_message=user_message,
         user_state=user_profile.get("state", ""),
@@ -148,9 +156,10 @@ def handle_user_message(user_message: str, user_profile: dict, chat_history: lis
     )
     
     answer = call_mistral_llm(
-        prompt="Provide the final answer to the user query based strictly on the retrieved schemes.",
+        prompt=user_prompt,
         system_prompt=generation_input
     )
+
     
     # ── Persist memory ───────────────────────────────────
     if session_id and session:

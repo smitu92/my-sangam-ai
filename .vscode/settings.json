@@ -1,0 +1,9 @@
+{
+    "python.analysis.extraPaths": [
+        "/Users/smitpatel/Documents/GitHub/Smit_Patel/sangam/DataClearning"
+    ],
+    "python.languageServer": "Pylance",
+    "python.analysis.indexing": true,
+    "python.analysis.autoSearchPaths": true,
+    "python.envFile": "${workspaceFolder}/.env"
+}

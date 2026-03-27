@@ -14,9 +14,9 @@ export default function LoginPage() {
         setIsLoading(true);
         setError("");
 
-        const form = e.target as HTMLFormElement;
-        const email = (form.elements[0] as HTMLInputElement).value;
-        const password = (form.elements[1] as HTMLInputElement).value;
+        const formElement = e.target as HTMLFormElement;
+        const email = (formElement.elements.namedItem("email") as HTMLInputElement).value;
+        const password = (formElement.elements.namedItem("password") as HTMLInputElement).value;
 
         try {
             const result = await login(email, password);
@@ -52,6 +52,7 @@ export default function LoginPage() {
                         <div>
                             <label className="block text-sm font-bold text-gray-700 mb-2">Email Address</label>
                             <input
+                                id="login-email"
                                 name="email"
                                 type="email"
                                 className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all font-medium"
@@ -63,6 +64,7 @@ export default function LoginPage() {
                         <div>
                             <label className="block text-sm font-bold text-gray-700 mb-2">Password</label>
                             <input
+                                id="login-password"
                                 name="password"
                                 type="password"
                                 className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all font-medium"

@@ -1,0 +1,84 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e4]:
+    - complementary [ref=e5]:
+      - generic [ref=e6]:
+        - generic [ref=e7]:
+          - heading "Sangam AI" [level=1] [ref=e8]
+          - paragraph [ref=e9]: The Digital Archivist
+        - button "New Chat" [ref=e10]:
+          - img [ref=e11]
+          - generic [ref=e13]: New Chat
+      - paragraph [ref=e15]: Recent History
+      - button "New Chat" [ref=e18]:
+        - img [ref=e19]
+        - paragraph [ref=e23]: New Chat
+        - generic [ref=e24]:
+          - button "Rename" [ref=e25]:
+            - img [ref=e26]
+          - button "Delete" [ref=e29]:
+            - img [ref=e30]
+      - generic [ref=e32]:
+        - link "Settings" [ref=e33] [cursor=pointer]:
+          - /url: /profile
+          - img [ref=e34]
+          - generic [ref=e37]: Settings
+        - generic [ref=e38]:
+          - generic [ref=e39]: CU
+          - paragraph [ref=e41]: Chat User 744291
+    - main [ref=e42]:
+      - generic [ref=e43]:
+        - generic [ref=e44]:
+          - button [ref=e45]:
+            - img [ref=e46]
+          - heading "Sangam AI" [level=1] [ref=e48]
+        - generic [ref=e49]:
+          - button "Help" [ref=e50]:
+            - img [ref=e51]
+          - button "Settings" [ref=e54]:
+            - img [ref=e55]
+          - link "CU" [ref=e58] [cursor=pointer]:
+            - /url: /profile
+            - generic [ref=e59]: CU
+      - generic [ref=e61]:
+        - generic [ref=e63]:
+          - generic [ref=e64]: CU
+          - paragraph [ref=e67]: What schemes are available for a cotton farmer in Gujarat?
+        - generic [ref=e69]:
+          - img [ref=e71]
+          - generic [ref=e74]:
+            - generic [ref=e75]:
+              - img [ref=e77]
+              - generic [ref=e79]: 🔍 Understanding your query...
+            - generic [ref=e80]:
+              - img [ref=e82]
+              - generic [ref=e84]: 📊 Analyzing your profile & filters...
+            - generic [ref=e85]:
+              - img [ref=e87]
+              - generic [ref=e89]: 🗂️ Searching relevant schemes...
+            - generic [ref=e93]: ✨ Generating personalized response...
+      - generic [ref=e95]:
+        - generic [ref=e97]:
+          - textbox "Ask Sangam AI about eligibility or scheme details..." [disabled] [ref=e98]
+          - button [disabled] [ref=e99]
+        - generic [ref=e101]:
+          - button "CHECK ELIGIBILITY" [ref=e102] [cursor=pointer]
+          - button "COMPARE SCHEMES" [ref=e103] [cursor=pointer]
+          - button "EXPERT ANALYSIS" [ref=e104] [cursor=pointer]
+  - generic [ref=e109] [cursor=pointer]:
+    - button "Open Next.js Dev Tools" [ref=e110]:
+      - img [ref=e111]
+    - generic [ref=e114]:
+      - button "Open issues overlay" [ref=e115]:
+        - generic [ref=e116]:
+          - generic [ref=e117]: "1"
+          - generic [ref=e118]: "2"
+        - generic [ref=e119]:
+          - text: Issue
+          - generic [ref=e120]: s
+      - button "Collapse issues badge" [ref=e121]:
+        - img [ref=e122]
+  - alert [ref=e124]
+```

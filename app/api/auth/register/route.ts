@@ -1,7 +1,7 @@
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { UserProfileSchema } from "@/prisma/zod/Userprofile.schema";
-import { supabase } from "@/lib/supabase/createClient";
+import { supabaseAdmin } from "@/lib/supabase/adminClient";
 
 
 export async function POST(request: Request) {
@@ -25,22 +25,28 @@ export async function POST(request: Request) {
         console.log("Validated.data Profile:", validatedProfile.data);
         console.log("Validated Profile:", validatedProfile);
 
-        //supabase signup
-        const { data: authData, error: authError } = await supabase.auth.signUp({ //it has issue of of 4 request an hour.
+        // ── Supabase Admin User Creation ────────────────────────────
+        const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
             email: email,
             password: password,
+            email_confirm: true, // Auto-confirm
+            user_metadata: { name }
+        });
 
-        })
-        console.log("Auth Data:", authData);
-        console.log("Auth Error:", authError);
-
-        if (authError) {
-            console.error("Supabase Auth Error:", authError);
+        if (authError || !authData?.user) {
+            console.error("Supabase Auth Error Detail:", JSON.stringify(authError, null, 2));
             return NextResponse.json(
-                { message: authError.message }, // Will return "User already registered" if email exists
+                { message: authError?.message || "Auth creation failed" }, 
                 { status: 400 }
             );
         }
+
+        console.log("Supabase Auth Success. User ID:", authData.user.id);
+        console.log("User Email:", authData.user.email);
+        console.log("Email Confirmed:", authData.user.email_confirmed_at);
+
+        // Optional: Small delay to ensure DB/Auth propagation before 201
+        await new Promise(resolve => setTimeout(resolve, 500));
 
         const userId = authData?.user?.id;
         if (!userId) {

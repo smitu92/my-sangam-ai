@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import json
 
+
 MODEL = "mistral"  # Options: "gemini" or "mistral"
 VERSION = "v3"      # Options: "v2" or "v3" (v3 = structured output)
 
