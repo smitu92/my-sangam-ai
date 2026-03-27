@@ -1,132 +1,64 @@
 # 🌊 Sangam — AI-Powered Indian Government Schemes Finder
 
-> Find the right government scheme for you — powered by RAG, Gemini & FAISS.
+> Find the right government scheme for you — powered by RAG, pgvector, Mistral & hybrid search.
 
-Sangam is a full-stack semantic search + AI recommendation engine built on top
-of 3,400+ Indian government schemes sourced from MyScheme.gov.in. Users
-describe their situation and get relevant scheme recommendations with key
-benefits — no keyword matching, pure meaning-based retrieval.
+Sangam is a full-stack semantic search + AI recommendation engine built on top of 3,400+ Indian government schemes sourced from MyScheme.gov.in. Users describe their situation in natural language and get relevant scheme recommendations with key benefits — no keyword guessing, pure meaning-based retrieval backed by a two-call LLM architecture.
 
 ---
 
-## 🏗️ Architecture
+## 🏗️ Architecture (v3)
 
-```mermaid
-flowchart TD
-    A[📄 indian_government_schemes.csv\n3400 rows · MyScheme.gov.in] --> B[🧹 Data Cleaning\nPandas · Remove nulls · Build full_text]
-    B --> C[💾 schemes_clean.csv\n3397 rows · 10 columns]
-    C --> D[🔢 Embedding\nGemini Embedding API\nfull_text → 768-dim vectors]
-    D --> E[🗂️ FAISS Index\nIndexFlatIP · Cosine Similarity\nSaved to faiss_index/]
-
-    E --> F[🔍 Retriever\nTop-k similarity search]
-    F --> G[📝 Prompt Template\nContext injection · User profile]
-    G --> H[🤖 Gemini 2.0 Flash\nGenerates natural language answer]
-
-    H --> I[⚡ FastAPI Backend\nPOST /query\nPydantic validation · CORS]
-
-    C --> J[(🐘 PostgreSQL\nvia Prisma ORM)]
-    J --> K[🌐 Next.js App Router\nSchemes · Chatbot · Profile · Loans · News]
-    I --> K
-
-    style A fill:#f0f4ff,stroke:#4a6cf7
-    style C fill:#f0f4ff,stroke:#4a6cf7
-    style E fill:#fff4e6,stroke:#f59e0b
-    style H fill:#f0fff4,stroke:#10b981
-    style I fill:#fdf4ff,stroke:#a855f7
-    style J fill:#eff6ff,stroke:#3b82f6
-    style K fill:#fff1f2,stroke:#f43f5e
-```
-
----
-
-## 🧠 How RAG Works Here
-
-```mermaid
-sequenceDiagram
-    participant User
-    participant Next.js
-    participant FastAPI
-    participant FAISS
-    participant Gemini
-
-    User->>Next.js: Enter query + profile (state, income, category)
-    Next.js->>FastAPI: POST /query { query, state, income, age }
-    FastAPI->>FAISS: embed(query) → search top 5 schemes
-    FAISS-->>FastAPI: [scheme_text_1 ... scheme_text_5]
-    FastAPI->>Gemini: prompt = context (5 schemes) + user query
-    Gemini-->>FastAPI: Natural language recommendation
-    FastAPI-->>Next.js: { "response": "..." }
-    Next.js-->>User: Display schemes + benefits
-```
-
----
-
-## 🗂️ Project Structure
+### Two-Call LLM Workflow
+We use a **Router-Generator** pattern to ensure high precision and cost-efficiency.
 
 ```
-sangam/
-├── app/                          # Next.js frontend (App Router)
-│   ├── about/
-│   ├── admin/
-│   ├── api/                      # Next.js API routes (proxy to FastAPI)
-│   ├── chatbot/
-│   ├── components/
-│   ├── contact/
-│   ├── loans/
-│   ├── login/
-│   ├── news/
-│   ├── profile/
-│   ├── register/
-│   ├── schemes/
-│   ├── layout.tsx
-│   ├── page.tsx
-│   └── globals.css
-│
-├── prisma/                       # Prisma ORM
-│   ├── migrations/
-│   ├── schema.prisma             # DB model for Scheme table
-│   ├── seed.ts                   # Prisma seeding
-│   └── feed_csv.ts               # Bulk-load CSV → PostgreSQL
-│
-├── DataClearning/                # 🧠 Python ML / RAG pipeline
-│   ├── data/
-│   │   ├── schemes_clean.csv     # Cleaned dataset
-│   │   ├── embeddings.npy        # Pre-computed Gemini vectors
-│   │   ├── faiss.index           # FAISS similarity-search index
-│   │   └── langchain_faiss/      # LangChain-compatible vectorstore
-│   │
-│   ├── worldOfRag/               # Step-by-step RAG learning modules
-│   │   ├── step1_embeddings.py   # Embed 3 rows & compare cosine similarity
-│   │   ├── step2_faiss.py        # Build FAISS index over full dataset
-│   │   ├── vectorGenerator.py    # Batch-embed all rows + save to disk
-│   │   ├── checkPointvectorGenerator.py  # Batch embed with resume support
-│   │   ├── context_injection.py  # Manual RAG: retrieve → inject → Gemini
-│   │   └── langchain/
-│   │       ├── docstore.py       # Raw FAISS → LangChain vectorstore
-│   │       ├── fullLangchain.py  # Full LangChain retrieval chain
-│   │       └── pandas_lern.py    # Pandas exploration script
-│   │
-│   ├── API/                      # FastAPI backend
-│   │   ├── Main.py               # FastAPI app (GET /, POST /query)
-│   │   ├── business_logic.py     # LangChain RAG chain + LLM logic
-│   │   └── user.json             # Sample user profiles for testing
-│   │
-│   ├── streamlit/
-│   │   └── app.py                # Streamlit UI (temp — chat + scheme cards)
-│   │
-│   ├── clean.py                  # Data cleaning script
-│   ├── clean.ipynb               # Data cleaning notebook
-│   ├── Makefile                  # Dev shortcuts (make api, make langchain…)
-│   └── requirements.txt          # Python dependencies
-│
-├── context/                      # Next.js context providers
-├── lib/                          # Shared libs (Prisma client, etc.)
-├── scripts/                      # Misc scripts
-├── middleware.ts                 # Next.js auth middleware
-├── package.json
-├── tsconfig.json
-└── README.md
+┌─────────────────────────────────────────────────────────────────┐
+│                     USER SENDS A MESSAGE                        │
+└──────────────────────────┬──────────────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  CALL 1 — ROUTER  (Mistral · ~100 tokens)                       │
+│                                                                 │
+│  Input:  user message + profile + chat history                  │
+│  Output: { "type": "SCHEME" | "GENERAL" | "OFF_TOPIC",          │
+│            "query": "...", "state": "...", "category": "..." }  │
+└──────────────────────────┬──────────────────────────────────────┘
+                           │
+          ┌────────────────┼────────────────┐
+          ▼                ▼                ▼
+      SCHEME            GENERAL          OFF_TOPIC
+          │                │                │
+          ▼                │                ▼
+  search_pgvector()        │        return hardcoded
+  filter → cosine          │        decline message
+  top 5 schemes            │        (no Call 2 at all)
+          │                │
+          └────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  CALL 2 — GENERATOR  (Mistral · ~800 tokens)                    │
+│                                                                 │
+│  Input:  user message + schemes + memory + profile              │
+│  Output: final natural language answer + structured metadata    │
+└──────────────────────────┬──────────────────────────────────────┘
+                           │
+                           ▼
+     { answer, type: SCHEME|GENERAL|OFF_TOPIC, schemes_found[] }
+                           │
+          ┌────────────────┼────────────────┐
+          ▼                ▼                ▼
+   SchemeCards +       TextBubble       OrangeWarning
+   TextBubble          (grey)           Bubble 🚫
+   (blue border)
 ```
+
+### Hybrid Search Engine
+Our retrieval pipeline fuses three distinct search techniques for maximum accuracy:
+- **Vector Search**: `pgvector` & cosine similarity for deep semantic meaning.
+- **Full-Text Search**: `tsvector` + `tsquery` for exact keyword matching and stemming.
+- **Fuzzy Search**: `pg_trgm` for typo tolerance and partial matches.
 
 ---
 
@@ -134,80 +66,77 @@ sangam/
 
 | Layer | Technology |
 |---|---|
-| Frontend | Next.js (App Router) · TypeScript · Tailwind CSS |
-| Auth & Middleware | Next.js middleware · Session handling |
-| Database | PostgreSQL · Prisma ORM |
-| ML / RAG Pipeline | Python 3.14 · LangChain · FAISS · Gemini Embedding API |
-| LLM | Gemini 2.0 Flash |
-| Backend AI API | FastAPI · Uvicorn · Pydantic |
-| Data Processing | Pandas 3.0.1 · NumPy |
-| Temp UI | Streamlit |
-| IDE | VS Code · Jupyter Notebook |
+| **Frontend** | Next.js (App Router) · TypeScript · Tailwind CSS |
+| **Auth** | Supabase Auth (with admin-bypass for testing) |
+| **Database** | Supabase (PostgreSQL) · Prisma ORM |
+| **Vector Engine** | `pgvector` (3072-dim) · IVFFlat indexing |
+| **Embeddings** | Gemini Embedding API (`text-embedding-004`) |
+| **LLM** | Mistral Small 3.1 (24B) via NVIDIA NIM API |
+| **AI Backend** | FastAPI · Uvicorn · Pydantic |
+| **Memory** | Short-term session memory (Buffer + LLM Summary) |
+
+---
+
+## 🗂️ Project Structure
+
+```
+sangam/
+├── app/
+│   ├── api/             # Proxy routes to FastAPI
+│   ├── chatbot/         # Immersive chat interface
+│   ├── schemes/         # Hybrid search dashboard
+│   ├── profile/         # User profile & data management
+│   └── components/      # Premium UI components (Tailwind)
+├── prisma/
+│   └── schema.prisma    # pgvector-ready DB schema
+├── integration-tests/   # Playwright (E2E) & Vitest (API)
+└── DataClearning/      # 🧠 Python ML / RAG pipeline
+    ├── data/            # Schemes dataset + pre-computed vectors
+    ├── worldOfRag/      # Educational RAG modules (v1 FAISS archived)
+    └── API/             # FastAPI v3 (Mistral Handlers)
+```
 
 ---
 
 ## 🚀 Setup & Run
 
-### Frontend (Next.js)
-
+### 1. Frontend (Next.js)
 ```bash
 npm install
-cp .env.local.example .env.local    # add DB URL, API keys
+cp .env.local.example .env.local   # add Supabase URL + auth keys
 npx prisma migrate dev
-npm run dev                          # runs on localhost:3000
+npm run dev                         # localhost:3000
 ```
 
-### Python RAG Backend (FastAPI)
-
+### 2. AI Backend (FastAPI)
 ```bash
 cd DataClearning
-python -m venv venv
-source venv/bin/activate
+python -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
-
-# Add your Gemini key
-echo "GOOGLE_API_KEY=your_key_here" > .env
-
-# Run FastAPI
-uvicorn API.Main:app --reload --port 8000
-# Swagger docs → http://localhost:8000/docs
-```
-
-### Streamlit (temp UI, optional)
-
-```bash
-cd DataClearning
-streamlit run streamlit/app.py
+# Set GOOGLE_API_KEY, NVIDIA_API_KEY, DATABASE_URL in .env
+uvicorn API.v3.handler:app --reload --port 8000
 ```
 
 ---
 
 ## 📡 API Reference
 
-### `GET /`
-Health check
-```json
-{ "status": "Sangam API running" }
-```
-
 ### `POST /query`
-Get scheme recommendations based on query + user profile.
-
 **Request:**
 ```json
 {
-  "query": "schemes for small farmers with low income",
-  "state": "Gujarat",
-  "category": "General",
-  "income": 50000,
-  "age": 35
+  "message": "show me farmer schemes in Gujarat",
+  "profile": { "state": "Gujarat", "occupation": "Farmer", "income": 50000 },
+  "session_id": "abc123"
 }
 ```
 
 **Response:**
 ```json
 {
-  "response": "Based on your profile, here are relevant schemes:\n1. PM-KISAN..."
+  "answer": "Here are relevant schemes for farmers in Gujarat...",
+  "type": "SCHEME",
+  "schemes_found": [{ "scheme_id": "42", "scheme_name": "PM-KISAN", "score": 0.91, ... }]
 }
 ```
 
@@ -215,33 +144,27 @@ Get scheme recommendations based on query + user profile.
 
 ## 🧭 Build Journey
 
-Built step-by-step to understand every layer before abstracting it:
-
-| Step | File | Key learning |
-|---|---|---|
-| 1️⃣ Data Cleaning | `clean.py` / `clean.ipynb` | `full_text` column combining all fields for RAG |
-| 2️⃣ Manual Embeddings | `worldOfRag/step1_embeddings.py` | What vectors look like, cosine similarity |
-| 3️⃣ Manual FAISS | `worldOfRag/step2_faiss.py` | Similarity search without any framework |
-| 4️⃣ Batch Embedding | `worldOfRag/vectorGenerator.py` | Embed all 3397 rows, save `.npy` + index |
-| 5️⃣ RAG without LangChain | `worldOfRag/context_injection.py` | Manual retrieval + prompt injection |
-| 6️⃣ RAG with LangChain | `worldOfRag/langchain/fullLangchain.py` | How LangChain abstracts the pipeline |
-| 7️⃣ FastAPI Backend | `API/Main.py` + `business_logic.py` | `/query` endpoint, Pydantic, lifespan |
-| 8️⃣ Streamlit UI | `streamlit/app.py` | Temp frontend for demo and testing |
-
----
+Built step-by-step from raw data to a production-grade AI platform:
+1. **Data Cleaning**: Unified `full_text` column for semantic search.
+2. **Vectorization**: Pre-computing 3072-dim embeddings for 3,400 schemes.
+3. **Core RAG**: Transitioned from FAISS to `pgvector` for native SQL integration.
+4. **Router-Generator**: Implemented two-call LLM logic to optimize cost and relevance.
+5. **Memory**: Built a Buffer + Summary pattern for persistent conversation context.
+6. **Testing**: Automated E2E verification with Playwright & Vitest.
 
 ## 🗺️ Roadmap
 
 - [x] Data cleaning + `full_text` column
-- [x] Manual embedding + FAISS exploration
-- [x] Full LangChain RAG pipeline
+- [x] Manual embedding + FAISS exploration (archived)
+- [x] Full LangChain RAG pipeline (archived)
 - [x] FastAPI `/query` endpoint
-- [x] Streamlit UI (temp)
-- [ ] Connect Next.js `/api/recommend` → FastAPI proxy
-- [ ] Profile-aware recommendations from Next.js form
-- [ ] Conversational memory (`ConversationBufferMemory`)
-- [ ] Filter by ministry / beneficiary type
-- [ ] Deploy FastAPI on Railway / Render
+- [x] pgvector migration
+- [x] Two-call LLM architecture (Router + Generator)
+- [x] Short-term session memory (Buffer + Summary)
+- [x] Hybrid search bar (FTS + Vector + Fuzzy)
+- [x] Recommendation endpoint (Profile-aware)
+- [x] Automated Integration Testing (Playwright + Vitest)
+- [ ] Deploy FastAPI on Railway
 - [ ] Deploy Next.js on Vercel
 
 ---
@@ -258,6 +181,4 @@ Built step-by-step to understand every layer before abstracting it:
 ## 🙏 Acknowledgements
 
 Built as part of **ImpactTHon** semester project.
-Powered by [Google Gemini](https://aistudio.google.com) ·
-[FAISS by Meta](https://github.com/facebookresearch/faiss) ·
-[LangChain](https://langchain.com) · [Prisma](https://prisma.io)
+Powered by **Mistral AI** · **Google Gemini** · **pgvector** · **Supabase** · **NVIDIA NIM**
