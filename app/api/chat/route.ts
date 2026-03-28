@@ -33,7 +33,8 @@ export async function POST(req: Request) {
         });
 
         // 2. Forward to FastAPI v2
-        const fastApiResponse = await fetch("http://localhost:8000/query", {
+        const FASTAPI_URL = process.env.FASTAPI_URL || "http://localhost:8000";
+        const fastApiResponse = await fetch(`${FASTAPI_URL}/query`, {
             method: "POST",
             headers: { 
                 "Content-Type": "application/json",

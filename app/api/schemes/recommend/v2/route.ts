@@ -29,7 +29,7 @@ export async function GET(req: Request) {
         }
 
         // 3. Contact FastAPI for Recommendation Intent
-        const apiHost = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+        const apiHost = process.env.FASTAPI_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
         const intentRes = await fetch(`${apiHost}/api/recommend-intent`, {
             method: "POST",
             headers: { 

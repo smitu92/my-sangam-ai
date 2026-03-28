@@ -17,7 +17,8 @@ export async function POST(req: Request) {
 
         // 1. Get Query Embedding from the FastAPI backend
         // This is key for semantic matching (knowing 'pm' relates to 'prime minister')
-        const embedRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/embed-query`, {
+        const FASTAPI_URL = process.env.FASTAPI_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+        const embedRes = await fetch(`${FASTAPI_URL}/api/embed-query`, {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json',
