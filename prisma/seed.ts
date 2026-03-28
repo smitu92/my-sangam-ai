@@ -32,25 +32,12 @@
 
 
 // prisma/seed.ts — clean version
-import dotenv from "dotenv"
-import path from "path"
+import prisma from "../lib/prisma";
 
+// No need for manual adapter or dotenv here as the '../lib/prisma' 
+// singleton already handles it correctly for both local and prod.
 
-dotenv.config({ path: path.join(process.cwd(), "../.env") }) // dotenv.config({ path: "../.env" })  // path relative to prisma/ folder
-console.log(process.env.DATABASE_URL)
-console.log(path.resolve(__dirname, "../.env"))
-import { PrismaClient } from "../lib/generated/prisma/client"
-import { PrismaPg } from "@prisma/adapter-pg"
-
-
-const adapter = new PrismaPg({
-    connectionString: process.env.DATABASE_URL
-})
-
-
-const prisma = new PrismaClient({ adapter })
-
-export default prisma
+export default prisma;
 
 
 /* quick revision
