@@ -1,6 +1,6 @@
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase/createClient"; // Or createBrowserClient if server context is tricky, but let's just use the api key or token
+import { adminSupabase as supabase } from "@/lib/supabase/adminSupabase"; // Or createBrowserClient if server context is tricky, but let's just use the api key or token
 
 export async function GET(req: Request) {
   try {

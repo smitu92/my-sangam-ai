@@ -1,7 +1,8 @@
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { UserProfileSchema } from "@/prisma/zod/Userprofile.schema";
-import { supabaseAdmin } from "@/lib/supabase/adminClient";
+import { adminSupabase } from "@/lib/supabase/adminSupabase";
+const supabaseAdmin = adminSupabase;
 
 
 export async function POST(request: Request) {

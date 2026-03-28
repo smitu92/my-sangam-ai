@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { supabase } from '@/lib/supabase/createClient';
+import { adminSupabase as supabase } from "@/lib/supabase/adminSupabase";
 import { getFuzzyScore } from '@/lib/utils/fuzzySearch';
 
 /**

@@ -2,7 +2,8 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase/createClient";
+import { createClient } from "@/lib/supabase/client";
+const supabase = createClient();
 
 // ── Types ─────────────────────────────────────────────────────
 interface UserProfile {
