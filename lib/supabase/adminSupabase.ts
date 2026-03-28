@@ -10,7 +10,7 @@ const __dirname = dirname(__filename);
 // Explicitly point to the .env file in the root folder, no matter where the script is run from
 dotenv.config({ path: resolve(__dirname, "../../.env") });
 
-type SupabaseAdmin = ReturnType<typeof createClient>;
+
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 // Check for both common names to avoid conflicts
@@ -21,7 +21,7 @@ if (!supabaseUrl || !serviceRoleKey) {
     // Removed process.exit(1) to allow build to finish successfully
 }
 
-export const adminSupabase: SupabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
+export const adminSupabase = createClient(supabaseUrl, serviceRoleKey, {
     auth: {
         autoRefreshToken: false,
         persistSession: false,
