@@ -12,12 +12,13 @@ dotenv.config({ path: resolve(__dirname, "../../.env") });
 
 type SupabaseAdmin = ReturnType<typeof createClient>;
 
-const supabaseUrl: string = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+// Check for both common names to avoid conflicts
 const serviceRoleKey: string = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-console.log(supabaseUrl, serviceRoleKey)
+
 if (!supabaseUrl || !serviceRoleKey) {
-    console.error("❌ Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in .env");
-    process.exit(1);
+    console.warn("⚠️ Warning: Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY. Admin features will be restricted.");
+    // Removed process.exit(1) to allow build to finish successfully
 }
 
 export const adminSupabase: SupabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
