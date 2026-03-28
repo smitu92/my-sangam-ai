@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import { supabase } from "./supabase/createClient";
+import { adminSupabase as supabase } from "./supabase/adminSupabase";
 
 /**
  * Standard utility to verify Supabase session from cookies in Next.js Server Components/API Routes.
