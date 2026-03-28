@@ -55,10 +55,17 @@ export default function ChatbotPage() {
     const [sessionLoading, setSessionLoading] = useState(true);
 
     // Sidebar state
-    const [sidebarOpen, setSidebarOpen] = useState(true);
+    const [sidebarOpen, setSidebarOpen] = useState(false);
     const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
     const [editTitle, setEditTitle] = useState("");
     const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+
+    // Sidebar Initialization Effect
+    useEffect(() => {
+        if (typeof window !== "undefined" && window.innerWidth >= 768) {
+            setSidebarOpen(true);
+        }
+    }, []);
 
     // Refs
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -350,10 +357,22 @@ export default function ChatbotPage() {
     /* ── Render ───────────────────────────────────────────── */
     return (
         <div className="sangam-chat h-screen bg-[#FAF7F2] flex overflow-hidden font-sans">
+            {/* ══════════ Mobile Overlay Backdrop ══════════ */}
+            {sidebarOpen && (
+                <div
+                    className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 md:hidden"
+                    onClick={() => setSidebarOpen(false)}
+                />
+            )}
+
             {/* ══════════ Sidebar ══════════ */}
             <aside
-                className={`${sidebarOpen ? "w-72" : "w-0"
-                    } transition-all duration-300 ease-in-out bg-[#FAF7F2] border-r border-[#E5DFD5] flex flex-col overflow-hidden shrink-0`}
+                className={`
+                    ${sidebarOpen ? "translate-x-0 w-72" : "-translate-x-full w-0 md:w-0"} 
+                    fixed md:relative z-50 md:z-auto h-full
+                    transition-all duration-300 ease-in-out bg-[#FAF7F2] border-r border-[#E5DFD5] 
+                    flex flex-col overflow-hidden shrink-0
+                `}
             >
                 {/* Sidebar Header — Branding */}
                 <div className="p-5 border-b border-[#E5DFD5]">
@@ -431,12 +450,20 @@ export default function ChatbotPage() {
                                         </div>
                                     </div>
                                 ) : (
-                                    <button
+                                    <div
                                         onClick={() => {
                                             setActiveSessionId(session.id);
                                             if (window.innerWidth < 768) setSidebarOpen(false);
                                         }}
-                                        className="w-full text-left p-3 flex items-start gap-3"
+                                        className="w-full text-left p-3 flex items-start gap-3 cursor-pointer"
+                                        role="button"
+                                        tabIndex={0}
+                                        onKeyDown={(e) => {
+                                            if (e.key === "Enter" || e.key === " ") {
+                                                setActiveSessionId(session.id);
+                                                if (window.innerWidth < 768) setSidebarOpen(false);
+                                            }
+                                        }}
                                     >
                                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className={`mt-0.5 shrink-0 ${activeSessionId === session.id ? "text-[#3D4F2F]" : "text-[#9B9B9B]"}`}>
                                             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" strokeLinecap="round" strokeLinejoin="round" />
@@ -447,7 +474,6 @@ export default function ChatbotPage() {
                                         <div className="min-w-0 flex-1">
                                             <p className={`text-sm truncate ${activeSessionId === session.id ? "text-[#2D2D2D] font-semibold" : "text-[#6B6B6B]"}`}>{session.title}</p>
                                         </div>
-
                                         <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
                                             <button
                                                 onClick={(e) => {
@@ -477,7 +503,8 @@ export default function ChatbotPage() {
                                                 </svg>
                                             </button>
                                         </div>
-                                    </button>
+                                    </div>
+
                                 )}
                             </div>
                         ))
@@ -528,14 +555,14 @@ export default function ChatbotPage() {
                         <h1 className="text-base font-semibold text-[#2D2D2D]">Sangam AI</h1>
                     </div>
                     <div className="flex items-center gap-1">
-                        <button className="p-2 rounded-lg hover:bg-[#F2EDE4] transition-colors" title="Help">
+                        <button className="p-2 rounded-lg hover:bg-[#F2EDE4] transition-colors hidden sm:block" title="Help">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-[#6B6B6B]">
                                 <circle cx="12" cy="12" r="10" />
                                 <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" strokeLinecap="round" strokeLinejoin="round" />
                                 <line x1="12" y1="17" x2="12.01" y2="17" />
                             </svg>
                         </button>
-                        <button className="p-2 rounded-lg hover:bg-[#F2EDE4] transition-colors" title="Settings">
+                        <button className="p-2 rounded-lg hover:bg-[#F2EDE4] transition-colors hidden sm:block" title="Settings">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-[#6B6B6B]">
                                 <circle cx="12" cy="12" r="3" />
                                 <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" strokeLinecap="round" strokeLinejoin="round" />
@@ -643,7 +670,7 @@ export default function ChatbotPage() {
                         </form>
 
                         {/* Quick Action Chips */}
-                        <div className="flex items-center justify-center gap-3 mt-3">
+                        <div className="flex items-center justify-start sm:justify-center gap-3 mt-3 overflow-x-auto no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0 scroll-smooth">
                             {["CHECK ELIGIBILITY", "COMPARE SCHEMES", "EXPERT ANALYSIS"].map((action) => (
                                 <button
                                     key={action}
@@ -652,7 +679,7 @@ export default function ChatbotPage() {
                                         action === "COMPARE SCHEMES" ? "Compare schemes available for my profile" :
                                         "Give me an expert analysis of the best schemes for me"
                                     )}
-                                    className="text-[10px] font-bold tracking-[0.08em] text-[#6B7F5E] hover:text-[#3D4F2F] hover:bg-[#F0F4EC] px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
+                                    className="text-[10px] font-bold tracking-[0.08em] text-[#6B7F5E] hover:text-[#3D4F2F] hover:bg-[#F0F4EC] px-3 py-1.5 rounded-lg transition-colors cursor-pointer shrink-0 border border-[#D4DEC8] sm:border-transparent bg-white sm:bg-transparent"
                                 >
                                     {action}
                                 </button>

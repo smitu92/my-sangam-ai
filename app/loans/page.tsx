@@ -132,7 +132,7 @@ export default function LoansPage() {
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
-                            <button className="bg-white text-black px-6 py-3 rounded-xl font-bold hover:bg-gray-200 transition-colors">
+                            <button className="w-full sm:w-auto bg-white text-black px-6 py-3 rounded-xl font-bold hover:bg-gray-200 transition-colors">
                                 Search
                             </button>
                         </div>
@@ -176,7 +176,7 @@ export default function LoansPage() {
                                     {loan.description}
                                 </p>
 
-                                <div className="grid grid-cols-2 gap-3 mb-6">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
                                     <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
                                         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Max Amount</p>
                                         <p className="font-bold text-gray-900">{loan.maxAmount}</p>
@@ -277,10 +277,10 @@ export default function LoansPage() {
                                 <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl -mr-10 -mt-10"></div>
 
                                 <p className="text-gray-400 text-sm font-bold uppercase tracking-wider mb-2">Estimated Monthly EMI</p>
-                                <div className="text-6xl font-black mb-4 tracking-tight">₹ {monthlyEMI.toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
-                                <div className="flex justify-center gap-4 text-xs text-gray-400 font-bold uppercase tracking-wider mb-8">
+                                <div className="text-5xl sm:text-6xl font-black mb-4 tracking-tight">₹ {monthlyEMI.toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
+                                <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 text-[10px] sm:text-xs text-gray-400 font-bold uppercase tracking-wider mb-8">
                                     <span>Total Interest: ₹{(totalInterest / 100000).toFixed(1)}L</span>
-                                    <span>•</span>
+                                    <span className="hidden sm:inline">•</span>
                                     <span>Total Payable: ₹{(totalAmount / 100000).toFixed(1)}L</span>
                                 </div>
 

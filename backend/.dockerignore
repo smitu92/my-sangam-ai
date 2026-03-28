@@ -1,0 +1,22 @@
+# Python cache — never needed in image
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+
+# Virtual environment — container uses its own
+venv/
+.venv/
+env/
+
+# Environment secrets — injected by platform at runtime
+.env
+.env.*
+
+# IDE and OS files
+.vscode/
+.DS_Store
+
+# Git
+.git/
+.gitignore

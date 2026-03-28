@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { supabase } from '@/lib/supabase/createClient';
+import { getServerUser } from '@/lib/auth-utils';
 
 /**
  * SEARCH v3.1: PURE DATABASE-DRIVEN HYBRID SEARCH
@@ -19,7 +19,10 @@ export async function POST(req: Request) {
         // This is key for semantic matching (knowing 'pm' relates to 'prime minister')
         const embedRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/embed-query`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'X-Internal-Secret': process.env.INTERNAL_API_SECRET || ''
+            },
             body: JSON.stringify({ query: query })
         });
 
@@ -34,22 +37,15 @@ export async function POST(req: Request) {
         const vectorString = `[${embedding.join(',')}]`;
 
         // 2. Fetch User Profile for filtering (State/Caste)
-        const authCookie = req.headers.get('cookie')
-            ?.split(';')
-            .find(c => c.trim().startsWith('sb-access-token='))
-            ?.split('=')[1];
-
         let userState = "Central";
         let userCaste = "General";
 
-        if (authCookie) {
-            const { data: { user } } = await supabase.auth.getUser(authCookie);
-            if (user) {
-                const profile = await prisma.userProfile.findUnique({ where: { userId: user.id } });
-                if (profile) {
-                    userState = profile.state;
-                    userCaste = profile.caste;
-                }
+        const user = await getServerUser();
+        if (user) {
+            const profile = await prisma.userProfile.findUnique({ where: { userId: user.id } });
+            if (profile) {
+                userState = profile.state;
+                userCaste = profile.caste;
             }
         }
 

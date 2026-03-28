@@ -24,7 +24,7 @@ export default function NewsPage() {
                     </p>
 
                     {/* Key Info Cards */}
-                    <div className="max-w-5xl mx-auto grid md:grid-cols-3 gap-4 text-left">
+                    <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-4 text-left">
                         {[
                             { title: "Real-time Updates", desc: "Get instant notifications on major scheme changes.", icon: "🔔" },
                             { title: "Verified Sources", desc: "All news is sourced directly from official government gazettes.", icon: "✅" },
@@ -44,7 +44,7 @@ export default function NewsPage() {
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-16 relative z-20">
                 {/* Stats Grid */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-16">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-16">
                     {[
                         { label: "Today's Updates", value: "12", icon: "📰", color: "text-blue-500", bg: "bg-blue-50" },
                         { label: "Trending Topics", value: "5", icon: "🔥", color: "text-purple-500", bg: "bg-purple-50" },
@@ -62,7 +62,7 @@ export default function NewsPage() {
                 </div>
 
                 {/* News Grid (Scheme Card Style) */}
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
                     {[
                         {
                             title: "New Subsidy for Electric Tractors Announced",

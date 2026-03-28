@@ -77,9 +77,10 @@ Our retrieval pipeline fuses three distinct search techniques for maximum accura
 
 ---
 
-## 🗂️ Project Structure
+## 🗂️ Project Evolution
 
-```
+### Phase 1: Legacy Structure (v1/v2)
+```bash
 sangam/
 ├── app/
 │   ├── api/             # Proxy routes to FastAPI
@@ -90,10 +91,30 @@ sangam/
 ├── prisma/
 │   └── schema.prisma    # pgvector-ready DB schema
 ├── integration-tests/   # Playwright (E2E) & Vitest (API)
-└── DataClearning/      # 🧠 Python ML / RAG pipeline
+└── DataClearning/      # 🧠 Legacy Python Backend (Misspelled)
     ├── data/            # Schemes dataset + pre-computed vectors
     ├── worldOfRag/      # Educational RAG modules (v1 FAISS archived)
     └── API/             # FastAPI v3 (Mistral Handlers)
+```
+
+
+---
+
+### Phase 2: Refined & Unified (`main-v2-clean`)
+
+> **Major Changes from the Past**:
+> - **Directory Refactor**: Renamed misspelled `DataClearning` to `backend/`.
+> - **Logic Consolidation**: Merged fragmented `API/v2/v3` handlers into a single `backend/core/` package.
+> - **Data Optimization**: Purged 200MB+ of obsolete legacy vector data and CSV files.
+
+```bash
+sangam/
+├── app/                 # Next.js Frontend
+├── backend/             # 🧠 Unified AI Backend (FastAPI) [NEW]
+│   ├── main.py          # Unified entry point
+│   └── core/            # Unified logic (db, llm, search, memory)
+├── prisma/              # DB Schema (Preserved)
+└── integration-tests/   # Automated Suites (Preserved)
 ```
 
 ---
@@ -110,11 +131,11 @@ npm run dev                         # localhost:3000
 
 ### 2. AI Backend (FastAPI)
 ```bash
-cd DataClearning
+cd backend
 python -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
 # Set GOOGLE_API_KEY, NVIDIA_API_KEY, DATABASE_URL in .env
-uvicorn API.v3.handler:app --reload --port 8000
+python main.py
 ```
 
 ---
@@ -152,11 +173,14 @@ Built step-by-step from raw data to a production-grade AI platform:
 5. **Memory**: Built a Buffer + Summary pattern for persistent conversation context.
 6. **Testing**: Automated E2E verification with Playwright & Vitest.
 
-## 🗺️ Roadmap
+---
 
+## 🗺️ Build Roadmap & Refactor Journey
+
+### Phase 1: Development
 - [x] Data cleaning + `full_text` column
-- [x] Manual embedding + FAISS exploration (archived)
-- [x] Full LangChain RAG pipeline (archived)
+- [x] Manual embedding + FAISS exploration (archived in `core-v1`)
+- [x] Full LangChain RAG pipeline (archived in `core-v1`)
 - [x] FastAPI `/query` endpoint
 - [x] pgvector migration
 - [x] Two-call LLM architecture (Router + Generator)
@@ -164,8 +188,19 @@ Built step-by-step from raw data to a production-grade AI platform:
 - [x] Hybrid search bar (FTS + Vector + Fuzzy)
 - [x] Recommendation endpoint (Profile-aware)
 - [x] Automated Integration Testing (Playwright + Vitest)
-- [ ] Deploy FastAPI on Railway
-- [ ] Deploy Next.js on Vercel
+
+---
+
+### Phase 2: Latest Refactor (`v2-clean` Update)
+
+> **What Changed & Why**:
+> To achieve a production-ready, professional state, we consolidated all AI logic, renamed the misspelled backend folders, and purged 200MB+ of legacy vector data.
+
+- [x] **Unified Backend**: Consolidated `DataClearning` → `backend/`.
+- [x] **Logic Consolidation**: Merged v2/v3 routers and handlers into `backend/core/`.
+- [x] **Repository Cleanup**: Purged 200MB+ of legacy FAISS/CSV files for a clean repository.
+- [ ] Deploy Unified Backend on Railway
+- [ ] Final Vercel Deployment
 
 ---
 
@@ -180,5 +215,5 @@ Built step-by-step from raw data to a production-grade AI platform:
 
 ## 🙏 Acknowledgements
 
-Built as part of **ImpactTHon** semester project.
+Built as part of the **6th Semester Project**.
 Powered by **Mistral AI** · **Google Gemini** · **pgvector** · **Supabase** · **NVIDIA NIM**

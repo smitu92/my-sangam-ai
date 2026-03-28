@@ -1,2 +1,0 @@
-ALTER TABLE "schemes" DROP COLUMN IF EXISTS "embedding";
-DROP TABLE IF EXISTS "users" CASCADE;

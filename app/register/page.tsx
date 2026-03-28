@@ -306,7 +306,7 @@ export default function RegisterPage() {
                         {/* ── STEP 2: Personal Info ───────────────── */}
                         {step === 2 && (
                             <>
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <Field label="Age" error={errors.age} id="reg-age">
                                         <input id="reg-age" type="number" className={inputCls} placeholder="25" value={form.age} onChange={e => set("age", e.target.value)} />
                                     </Field>
@@ -317,7 +317,7 @@ export default function RegisterPage() {
                                         </select>
                                     </Field>
                                 </div>
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <Field label="State" error={errors.state} id="reg-state">
                                         <input id="reg-state" type="text" className={inputCls} placeholder="Gujarat" value={form.state} onChange={e => set("state", e.target.value)} />
                                     </Field>
@@ -325,7 +325,7 @@ export default function RegisterPage() {
                                         <input id="reg-district" type="text" className={inputCls} placeholder="Ahmedabad" value={form.district} onChange={e => set("district", e.target.value)} />
                                     </Field>
                                 </div>
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <Field label="Caste Category" error={errors.caste} id="reg-caste">
                                         <select id="reg-caste" className={selectCls} value={form.caste} onChange={e => set("caste", e.target.value)}>
                                             {CASTES.map(c => <option key={c} value={c}>{humanize(c)}</option>)}
@@ -335,7 +335,7 @@ export default function RegisterPage() {
                                         <input id="reg-income" type="number" className={inputCls} placeholder="300000" value={form.annualIncome} onChange={e => set("annualIncome", e.target.value)} />
                                     </Field>
                                 </div>
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <Field label="Ration Card">
                                         <select className={selectCls} value={form.rationCard} onChange={e => set("rationCard", e.target.value)}>
                                             {RATION_CARDS.map(r => <option key={r} value={r}>{r}</option>)}
@@ -370,7 +370,7 @@ export default function RegisterPage() {
                                 {/* Student */}
                                 {form.occupation === "Student" && (
                                     <>
-                                        <div className="grid grid-cols-2 gap-4">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                             <Field label="Education Level" error={errors.educationLevel} id="reg-edu-level">
                                                 <select id="reg-edu-level" className={selectCls} value={form.educationLevel} onChange={e => set("educationLevel", e.target.value)}>
                                                     <option value="">Select...</option>
@@ -387,7 +387,7 @@ export default function RegisterPage() {
                                         <Field label="Course Name" error={errors.courseName} id="reg-course">
                                             <input id="reg-course" type="text" className={inputCls} placeholder="e.g. B.Tech CSE" value={form.courseName} onChange={e => set("courseName", e.target.value)} />
                                         </Field>
-                                        <div className="grid grid-cols-2 gap-4">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                             <Field label="Year of Study" error={errors.yearOfStudy} id="reg-year">
                                                 <input id="reg-year" type="number" className={inputCls} placeholder="1-7" value={form.yearOfStudy} onChange={e => set("yearOfStudy", e.target.value)} />
                                             </Field>
@@ -401,7 +401,7 @@ export default function RegisterPage() {
                                 {/* Teacher / Researcher */}
                                 {(form.occupation === "Teacher" || form.occupation === "Researcher") && (
                                     <>
-                                        <div className="grid grid-cols-2 gap-4">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                             <Field label="Education Level" error={errors.educationLevel} id="reg-teacher-edu">
                                                 <select id="reg-teacher-edu" className={selectCls} value={form.educationLevel} onChange={e => set("educationLevel", e.target.value)}>
                                                     <option value="">Select...</option>
@@ -427,7 +427,7 @@ export default function RegisterPage() {
                                 {/* Farmer */}
                                 {form.occupation === "Farmer" && (
                                     <>
-                                        <div className="grid grid-cols-2 gap-4">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                             <Field label="Land Size (Acres)" error={errors.landSizeAcres} id="reg-land-size">
                                                 <input id="reg-land-size" type="number" step="0.1" className={inputCls} placeholder="2.5" value={form.landSizeAcres} onChange={e => set("landSizeAcres", e.target.value)} />
                                             </Field>
@@ -451,7 +451,7 @@ export default function RegisterPage() {
                                 {/* Dairy Farm */}
                                 {form.occupation === "DairyFarm" && (
                                     <>
-                                        <div className="grid grid-cols-2 gap-4">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                             <Field label="Animal Count" error={errors.animalCount}>
                                                 <input type="number" className={inputCls} placeholder="10" value={form.animalCount} onChange={e => set("animalCount", e.target.value)} />
                                             </Field>
@@ -459,7 +459,7 @@ export default function RegisterPage() {
                                                 <input type="text" className={inputCls} placeholder="Cow, Buffalo" value={form.animalType} onChange={e => set("animalType", e.target.value)} />
                                             </Field>
                                         </div>
-                                        <div className="grid grid-cols-2 gap-4">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                             <Field label="Land Size (Optional)">
                                                 <input type="number" step="0.1" className={inputCls} placeholder="1.0" value={form.landSizeAcres} onChange={e => set("landSizeAcres", e.target.value)} />
                                             </Field>
@@ -477,7 +477,7 @@ export default function RegisterPage() {
                                         <Field label="Business Type" error={errors.businessType}>
                                             <input type="text" className={inputCls} placeholder="Manufacturing, Service, Retail" value={form.businessType} onChange={e => set("businessType", e.target.value)} />
                                         </Field>
-                                        <div className="grid grid-cols-2 gap-4">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                             <Field label="Employee Count (Optional)">
                                                 <input type="number" className={inputCls} placeholder="10" value={form.employeeCount} onChange={e => set("employeeCount", e.target.value)} />
                                             </Field>
@@ -568,7 +568,7 @@ export default function RegisterPage() {
                         <span className="relative bg-white px-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Or Register With</span>
                     </div>
 
-                    <div className="mt-8 grid grid-cols-2 gap-4">
+                    <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <button className="flex items-center justify-center gap-2 py-3 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors font-bold text-gray-700">
                             <span className="text-xl">G</span> Google
                         </button>

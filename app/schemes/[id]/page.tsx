@@ -120,16 +120,16 @@ export default function SchemeDetailsPage({
     return (
         <main className="min-h-screen bg-[#f3f0e9] pt-24 pb-20 font-sans text-gray-900 selection:bg-blue-100 selection:text-blue-900">
 
-            <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 w-full overflow-hidden">
 
                 {/* Breadcrumb */}
-                <div className="mb-8 text-sm font-medium flex items-center gap-2">
-                    <Link href="/schemes" className="text-gray-500 hover:text-gray-900 transition-colors">Schemes</Link>
+                <div className="mb-6 sm:mb-8 text-xs sm:text-sm font-medium flex flex-wrap items-center gap-2">
+                    <Link href="/schemes" className="text-gray-500 hover:text-gray-900 transition-colors whitespace-nowrap">Schemes</Link>
                     <span className="text-gray-400">/</span>
-                    <span className="text-gray-900 font-bold">{scheme.title}</span>
+                    <span className="text-gray-900 font-bold break-words">{scheme.title}</span>
                 </div>
 
-                <div className="grid lg:grid-cols-4 gap-8 items-start">
+                <div className="flex flex-col lg:grid lg:grid-cols-4 gap-8 items-start">
 
                     {/* Left Column: Navigation (Tabs) */}
                     <div className="hidden lg:block lg:col-span-1 sticky top-24">
@@ -162,10 +162,10 @@ export default function SchemeDetailsPage({
                     </div>
 
                     {/* Middle Column: Active Content */}
-                    <div className="lg:col-span-3 space-y-8 min-h-[500px]">
+                    <div className="lg:col-span-3 space-y-8 min-h-[500px] w-full max-w-full">
 
                         {/* Mobile Tabs */}
-                        <div className="lg:hidden flex overflow-x-auto gap-2 pb-2 scrollbar-hide">
+                        <div className="lg:hidden flex overflow-x-auto gap-2 pb-2 scrollbar-hide w-full max-w-full">
                             {[
                                 { id: 'overview', label: 'Overview', icon: FileText },
                                 { id: 'benefits', label: 'Benefits', icon: Gift },
@@ -188,21 +188,21 @@ export default function SchemeDetailsPage({
                         </div>
 
                         {activeSection === 'overview' && (
-                            <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 relative overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
-                                <div className="flex flex-wrap gap-2 mb-6">
-                                    <span className="bg-gray-100 text-gray-900 border border-gray-200 px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider">
+                            <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-sm border border-gray-100 relative overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500 w-full">
+                                <div className="flex flex-wrap gap-2 mb-4 sm:mb-6">
+                                    <span className="bg-gray-100 text-gray-900 border border-gray-200 px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider shrink-0">
                                         {scheme.category}
                                     </span>
-                                    <span className={`px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider border ${scheme.status === 'active' ? 'bg-gray-900 text-white border-gray-900' : 'bg-gray-100 text-gray-500 border-gray-200'}`}>
+                                    <span className={`px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider border shrink-0 ${scheme.status === 'active' ? 'bg-gray-900 text-white border-gray-900' : 'bg-gray-100 text-gray-500 border-gray-200'}`}>
                                         {scheme.status}
                                     </span>
-                                    <span className="bg-white text-gray-900 px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider border border-gray-200 flex items-center gap-1">
+                                    <span className="bg-white text-gray-900 px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider border border-gray-200 flex items-center gap-1 shrink-0">
                                         <MapPin className="w-3 h-3" />
                                         {scheme.state === 'Central' ? 'Central Govt' : `${scheme.state}`}
                                     </span>
                                 </div>
 
-                                <h1 className="text-3xl md:text-4xl font-black text-gray-900 mb-6 leading-tight">
+                                <h1 className="text-xl sm:text-3xl md:text-4xl font-black text-gray-900 mb-6 leading-tight break-words">
                                     {scheme.title}
                                 </h1>
 
@@ -215,8 +215,8 @@ export default function SchemeDetailsPage({
 
                                     return (
                                         <div className="mb-8">
-                                            <div className="relative bg-[#f8f9fa] rounded-2xl p-8 min-h-[200px] border border-gray-100 flex flex-col justify-between">
-                                                <div className="text-lg text-gray-700 leading-relaxed font-medium space-y-4">
+                                            <div className="relative bg-[#f8f9fa] rounded-2xl p-4 sm:p-8 min-h-[200px] border border-gray-100 flex flex-col justify-between w-full overflow-hidden">
+                                                <div className="text-sm sm:text-lg text-gray-700 leading-relaxed font-medium space-y-4 break-words">
                                                     {slides[currentSlide]?.map((paragraph, index) => (
                                                         <p key={index}>{paragraph.trim()}</p>
                                                     ))}
@@ -255,7 +255,7 @@ export default function SchemeDetailsPage({
                                     );
                                 })()}
 
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                                     <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 text-center">
                                         <div className="text-gray-400 text-[10px] font-bold uppercase tracking-wider mb-1">Benefit Type</div>
                                         <div className="font-bold text-gray-900">Financial</div>
@@ -277,9 +277,9 @@ export default function SchemeDetailsPage({
                         )}
 
                         {activeSection === 'benefits' && (
-                            <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                                <h2 className="text-2xl font-black text-gray-900 mb-6 flex items-center gap-3">
-                                    <span className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center text-gray-900">
+                            <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-sm border border-gray-100 animate-in fade-in slide-in-from-bottom-4 duration-500 overflow-hidden w-full">
+                                <h2 className="text-lg sm:text-xl md:text-2xl font-black text-gray-900 mb-6 flex items-center gap-3">
+                                    <span className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gray-100 flex items-center justify-center text-gray-900 flex-shrink-0">
                                         <Gift className="w-5 h-5" />
                                     </span>
                                     Benefits & Amount
@@ -302,9 +302,9 @@ export default function SchemeDetailsPage({
                         )}
 
                         {activeSection === 'eligibility' && (
-                            <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                                <h2 className="text-2xl font-black text-gray-900 mb-6 flex items-center gap-3">
-                                    <span className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center text-gray-900">
+                            <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-sm border border-gray-100 animate-in fade-in slide-in-from-bottom-4 duration-500 overflow-hidden w-full">
+                                <h2 className="text-lg sm:text-xl md:text-2xl font-black text-gray-900 mb-6 flex items-center gap-3">
+                                    <span className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gray-100 flex items-center justify-center text-gray-900 flex-shrink-0">
                                         <CheckCircle className="w-5 h-5" />
                                     </span>
                                     Similarity Check
@@ -314,11 +314,11 @@ export default function SchemeDetailsPage({
                                         <div className="w-2 h-2 rounded-full bg-gray-900 animate-pulse"></div>
                                         <h3 className="text-gray-900 font-bold text-sm uppercase tracking-wider">AI Eligibility Analysis</h3>
                                     </div>
-                                    <p className="text-gray-700 font-medium">
+                                    <p className="text-sm sm:text-base text-gray-700 font-medium break-words">
                                         {eligibilityLoading ? (
                                             <span className="animate-pulse bg-gray-200 text-transparent px-2 rounded">Analyzing your profile against scheme guidelines... this may take a few moments.</span>
                                         ) : eligibilityData ? (
-                                            <>Based on your profile, you have a <span className={`font-black bg-white border border-gray-200 px-2 py-0.5 rounded ${eligibilityData.chance === 'High' ? 'text-green-600' : 'text-gray-900'}`}>{eligibilityData.chance} Chance</span> of being eligible for this scheme.</>
+                                            <>Based on your profile, you have a <span className={`font-black bg-white border border-gray-200 px-2 py-0.5 rounded whitespace-nowrap ${eligibilityData.chance === 'High' ? 'text-green-600' : 'text-gray-900'}`}>{eligibilityData.chance} Chance</span> of being eligible for this scheme.</>
                                         ) : (
                                             "Please login or update your profile to view full AI analysis."
                                         )}
@@ -334,13 +334,13 @@ export default function SchemeDetailsPage({
                                         eligibilityData.criteria.map((crit, idx) => (
                                             <div key={idx} className="flex items-center justify-between p-4 bg-white rounded-xl border border-gray-200 shadow-sm">
                                                 <span className="font-bold text-gray-700">{crit.label}</span>
-                                                <span className={`font-bold flex items-center gap-1 ${crit.match ? 'text-green-600' : 'text-red-500'}`}>
-                                                    {crit.match ? <CheckCircle className="w-5 h-5" /> : (
-                                                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                                <span className={`font-bold flex items-center gap-1 flex-shrink-0 ml-2 ${crit.match ? 'text-green-600' : 'text-red-500'}`}>
+                                                    {crit.match ? <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5" /> : (
+                                                        <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                                             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                                                         </svg>
                                                     )}
-                                                    {crit.match ? 'Match' : 'Unmatched'}
+                                                    <span className="text-xs sm:text-sm">{crit.match ? 'Match' : 'Unmatched'}</span>
                                                 </span>
                                             </div>
                                         ))
@@ -350,14 +350,14 @@ export default function SchemeDetailsPage({
                         )}
 
                         {activeSection === 'documents' && (
-                            <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                                <h2 className="text-2xl font-black text-gray-900 mb-6 flex items-center gap-3">
-                                    <span className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center text-gray-900">
+                            <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-sm border border-gray-100 animate-in fade-in slide-in-from-bottom-4 duration-500 overflow-hidden w-full">
+                                <h2 className="text-lg sm:text-xl md:text-2xl font-black text-gray-900 mb-6 flex items-center gap-3">
+                                    <span className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gray-100 flex items-center justify-center text-gray-900 flex-shrink-0">
                                         <Files className="w-5 h-5" />
                                     </span>
                                     Required Documents
                                 </h2>
-                                <div className="grid md:grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     {['Aadhar Card', 'Income Certificate', 'Caste Certificate', 'Bank Passbook', 'Passport Photo', 'Previous Marksheet'].map((doc, i) => (
                                         <div key={i} className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl border border-gray-100 hover:bg-gray-100 transition-colors">
                                             <div className="w-8 h-8 rounded-lg bg-white border border-gray-200 flex items-center justify-center text-gray-400">
@@ -371,9 +371,9 @@ export default function SchemeDetailsPage({
                         )}
 
                         {activeSection === 'apply' && (
-                            <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                                <h2 className="text-2xl font-black text-gray-900 mb-6 flex items-center gap-3">
-                                    <span className="w-10 h-10 rounded-xl bg-gray-900 text-white flex items-center justify-center">
+                            <div className="bg-white rounded-3xl p-4 sm:p-8 shadow-sm border border-gray-100 animate-in fade-in slide-in-from-bottom-4 duration-500 overflow-hidden w-full">
+                                <h2 className="text-lg sm:text-xl md:text-2xl font-black text-gray-900 mb-6 flex items-center gap-3">
+                                    <span className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gray-900 text-white flex items-center justify-center flex-shrink-0">
                                         <Rocket className="w-5 h-5" />
                                     </span>
                                     Ready to Apply?
@@ -382,7 +382,7 @@ export default function SchemeDetailsPage({
                                 <div className="bg-gray-50 border border-gray-200 rounded-2xl p-8 text-center mb-8">
                                     <p className="text-gray-900 font-bold text-lg mb-2">Proceed to Official Portal</p>
                                     <p className="text-gray-500 text-sm mb-6 max-w-md mx-auto">You will be redirected to the official government website to complete your application.</p>
-                                    <button className="px-8 py-4 bg-gray-900 hover:bg-black text-white rounded-xl font-bold text-lg shadow-xl shadow-gray-900/10 hover:translate-y-[-2px] transition-all flex items-center gap-2 mx-auto">
+                                    <button className="w-full sm:w-auto px-8 py-4 bg-gray-900 hover:bg-black text-white rounded-xl font-bold text-lg shadow-xl shadow-gray-900/10 hover:translate-y-[-2px] transition-all flex items-center justify-center gap-2 mx-auto">
                                         Apply Now on Official Website
                                         <Globe className="w-5 h-5" />
                                     </button>

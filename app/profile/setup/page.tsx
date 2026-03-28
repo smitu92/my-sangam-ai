@@ -133,16 +133,17 @@ export default function ProfileSetupPage() {
         <main className="min-h-screen pt-32 pb-20 bg-[#f3f0e9] flex justify-center items-center px-4">
             <div className="max-w-4xl w-full bg-white rounded-3xl shadow-xl overflow-hidden flex flex-col md:flex-row animate-fade-in-up border border-gray-100 min-h-[600px]">
 
-                {/* Sidebar Steps (Desktop) */}
-                <div className="w-full md:w-1/3 bg-[#111111] text-white p-8 flex flex-col justify-between relative overflow-hidden">
+                {/* Sidebar Steps (Desktop) / Progress Bar (Mobile) */}
+                <div className="w-full md:w-1/3 bg-[#111111] text-white p-6 md:p-8 flex flex-col justify-between relative overflow-hidden">
                     <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:16px_16px]"></div>
                     <div className="absolute inset-0 bg-[radial-gradient(circle_400px_at_50%_-100px,#1a1a1a,transparent)]"></div>
 
                     <div className="relative z-10">
-                        <h1 className="text-2xl font-bold mb-2">Complete Your Profile</h1>
-                        <p className="text-gray-400 text-sm mb-12">Fill in your details to get personalized scheme recommendations.</p>
+                        <h1 className="text-xl md:text-2xl font-bold mb-2">Complete Your Profile</h1>
+                        <p className="text-gray-400 text-xs md:text-sm mb-6 md:mb-12">Fill in your details to get personalized scheme recommendations.</p>
 
-                        <div className="space-y-6">
+                        {/* DESKTOP STEPS */}
+                        <div className="hidden md:block space-y-6">
                             {steps.map((step, idx) => (
                                 <div key={idx} className={`flex items-center gap-4 ${currentStep === idx + 1 ? "opacity-100" : "opacity-40"}`}>
                                     <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold transition-all ${currentStep === idx + 1 ? "bg-white text-black shadow-lg shadow-white/20" : "bg-white/10 text-gray-400"}`}>
@@ -152,9 +153,19 @@ export default function ProfileSetupPage() {
                                 </div>
                             ))}
                         </div>
+
+                        {/* MOBILE STEPS (Horizontal) */}
+                        <div className="md:hidden flex items-center justify-between gap-2">
+                            {steps.map((step, idx) => (
+                                <div key={idx} className="flex-1 flex flex-col items-center gap-2">
+                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all ${currentStep === idx + 1 ? "bg-white text-black" : currentStep > idx + 1 ? "bg-emerald-500 text-white" : "bg-white/10 text-gray-400"}`}>
+                                        {currentStep > idx + 1 ? "✓" : idx + 1}
+                                    </div>
+                                    <span className={`text-[10px] font-bold uppercase tracking-tighter ${currentStep === idx + 1 ? "text-white" : "text-gray-500"}`}>{step.title}</span>
+                                </div>
+                            ))}
+                        </div>
                     </div>
-
-
                 </div>
 
                 {/* Steps Content */}
@@ -168,7 +179,7 @@ export default function ProfileSetupPage() {
                         <div className="space-y-6">
                             {currentStep === 1 && (
                                 <div className="animate-fade-in">
-                                    <div className="grid md:grid-cols-2 gap-6">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
                                         <div>
                                             <label className="block text-sm font-bold text-gray-700 mb-2">Aadhar Number</label>
                                             <input name="aadhar" value={user.aadhar} onChange={handleInputChange} placeholder="XXXX XXXX XXXX" className="w-full p-4 rounded-xl bg-gray-50 border border-gray-200 focus:border-blue-500 outline-none font-medium" />
@@ -191,7 +202,7 @@ export default function ProfileSetupPage() {
                                         <label className="block text-sm font-bold text-gray-700 mb-2">Full Name</label>
                                         <input name="name" value={user.name} onChange={handleInputChange} className="w-full p-4 rounded-xl bg-gray-50 border border-gray-200 focus:border-blue-500 outline-none font-medium" />
                                     </div>
-                                    <div className="grid md:grid-cols-2 gap-6">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
                                         <div>
                                             <label className="block text-sm font-bold text-gray-700 mb-2">Date of Birth</label>
                                             <input type="date" name="dob" value={user.dob} onChange={handleInputChange} className="w-full p-4 rounded-xl bg-gray-50 border border-gray-200 focus:border-blue-500 outline-none font-medium text-gray-600" />
@@ -220,7 +231,7 @@ export default function ProfileSetupPage() {
 
                             {currentStep === 3 && (
                                 <div className="animate-fade-in space-y-4">
-                                    <div className="grid md:grid-cols-2 gap-6">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
                                         <div>
                                             <label className="block text-sm font-bold text-gray-700 mb-2">Father's Name</label>
                                             <input name="fatherName" value={user.fatherName} onChange={handleInputChange} className="w-full p-4 rounded-xl bg-gray-50 border border-gray-200 focus:border-blue-500 outline-none font-medium" />
@@ -230,7 +241,7 @@ export default function ProfileSetupPage() {
                                             <input name="fatherProfession" value={user.fatherProfession} onChange={handleInputChange} className="w-full p-4 rounded-xl bg-gray-50 border border-gray-200 focus:border-blue-500 outline-none font-medium" />
                                         </div>
                                     </div>
-                                    <div className="grid md:grid-cols-2 gap-6">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
                                         <div>
                                             <label className="block text-sm font-bold text-gray-700 mb-2">Mother's Name</label>
                                             <input name="motherName" value={user.motherName} onChange={handleInputChange} className="w-full p-4 rounded-xl bg-gray-50 border border-gray-200 focus:border-blue-500 outline-none font-medium" />

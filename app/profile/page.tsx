@@ -64,16 +64,16 @@ export default function ProfilePage() {
                                 <span>🎂 {user.age ? `${user.age} Years Old` : "Age Not Set"}</span>
                             </p>
 
-                            <div className="flex flex-wrap gap-4 justify-center md:justify-start">
-                                <div className="bg-white/5 backdrop-blur-sm px-5 py-2.5 rounded-xl border border-white/10 text-sm hover:bg-white/10 transition-colors">
+                             <div className="flex flex-wrap md:flex-nowrap gap-4 justify-center md:justify-start">
+                                <div className="bg-white/5 backdrop-blur-sm px-5 py-2.5 rounded-xl border border-white/10 text-sm hover:bg-white/10 transition-colors w-full sm:w-auto">
                                     <span className="block text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-0.5">Annual Income</span>
                                     <span className="font-bold text-white text-lg">₹{user.annualIncome ? user.annualIncome.toLocaleString("en-IN") : "N/A"}</span>
                                 </div>
-                                <div className="bg-white/5 backdrop-blur-sm px-5 py-2.5 rounded-xl border border-white/10 text-sm hover:bg-white/10 transition-colors">
+                                <div className="bg-white/5 backdrop-blur-sm px-5 py-2.5 rounded-xl border border-white/10 text-sm hover:bg-white/10 transition-colors w-full sm:w-auto">
                                     <span className="block text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-0.5">Social Category</span>
                                     <span className="font-bold text-white text-lg">{user.caste || "General"}</span>
                                 </div>
-                                <div className="bg-white/5 backdrop-blur-sm px-5 py-2.5 rounded-xl border border-white/10 text-sm hover:bg-white/10 transition-colors">
+                                <div className="bg-white/5 backdrop-blur-sm px-5 py-2.5 rounded-xl border border-white/10 text-sm hover:bg-white/10 transition-colors w-full sm:w-auto">
                                     <span className="block text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-0.5">Verifier ID</span>
                                     <span className="font-bold text-emerald-400 text-lg flex items-center gap-1">
                                         {user.aadhar ? `XXXX-${user.aadhar.slice(-4)}` : "Unverified"}

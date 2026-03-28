@@ -5,10 +5,10 @@ import { supabase } from "@/lib/supabase/createClient";
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Public Routes
+  // Public Routes - These can be accessed without a token
   const isPublicRoute = 
     pathname === "/" || 
-    pathname.startsWith("/api/");
+    pathname.startsWith("/api/auth/"); // Allow auth callbacks and logout
     
   // Auth Pages
   const isAuthPage = 

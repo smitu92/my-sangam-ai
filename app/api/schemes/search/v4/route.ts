@@ -20,7 +20,10 @@ export async function POST(req: Request) {
         if (mode === 'details' && query) {
             const embedRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/embed-query`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-Internal-Secret': process.env.INTERNAL_API_SECRET || ''
+                },
                 body: JSON.stringify({ query: query })
             });
             if (embedRes.ok) {

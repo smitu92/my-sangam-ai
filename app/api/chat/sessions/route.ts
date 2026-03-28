@@ -1,17 +1,17 @@
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase/createClient";
+import { getServerUser } from "@/lib/auth-utils";
 
 // GET — List all chat sessions for the authenticated user
 export async function GET(request: Request) {
     try {
-        const authHeader = request.headers.get("x-user-id");
-        if (!authHeader) {
+        const user = await getServerUser();
+        if (!user) {
             return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
         }
 
         const sessions = await prisma.chatSession.findMany({
-            where: { userId: authHeader },
+            where: { userId: user.id },
             orderBy: { updatedAt: "desc" },
             select: {
                 id: true,
@@ -32,15 +32,16 @@ export async function GET(request: Request) {
 // POST — Create a new chat session
 export async function POST(request: Request) {
     try {
-        const { userId, title } = await request.json();
-
-        if (!userId) {
-            return NextResponse.json({ message: "Missing userId" }, { status: 400 });
+        const user = await getServerUser();
+        if (!user) {
+            return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
         }
+
+        const { title } = await request.json();
 
         const session = await prisma.chatSession.create({
             data: {
-                userId,
+                userId: user.id,
                 title: title || "New Chat",
             },
         });

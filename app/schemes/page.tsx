@@ -375,13 +375,13 @@ function SchemesContent() {
                         </div>
 
                         {recLoading ? (
-                            <div className="grid md:grid-cols-3 gap-6">
+                            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {[1, 2, 3].map((i) => (
                                     <div key={i} className="bg-white rounded-2xl h-64 animate-pulse shadow-sm border border-gray-100"></div>
                                 ))}
                             </div>
                         ) : recommendations.length > 0 ? (
-                            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {recommendations.slice(0, 3).map((scheme) => (
                                     <div key={scheme.id} className="relative group bg-white rounded-2xl p-6 border border-gray-200 shadow-sm transition-all hover:border-gray-400 hover:shadow-md overflow-hidden">
 
@@ -419,7 +419,7 @@ function SchemesContent() {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
+                    <div className="flex flex-row overflow-x-auto pb-4 gap-4 no-scrollbar -mx-4 px-4 md:grid md:grid-cols-4 lg:grid-cols-8 md:overflow-visible">
                         {categoryList.map((cat) => {
                             const isActive = activeCategory === cat.name;
                             const Icon = cat.icon;
@@ -427,7 +427,7 @@ function SchemesContent() {
                                 <button
                                     key={cat.name}
                                     onClick={() => handleCategoryChange(cat.name)}
-                                    className={`group flex flex-col items-center justify-center p-4 rounded-xl transition-all duration-200 border ${isActive
+                                    className={`group flex flex-col items-center justify-center p-4 rounded-xl transition-all duration-200 border shrink-0 min-w-[100px] md:min-w-0 ${isActive
                                         ? 'bg-gray-900 border-gray-900 text-white shadow-md'
                                         : 'bg-white border-gray-200 hover:border-gray-400 text-gray-500 hover:text-gray-900'
                                         }`}
@@ -446,8 +446,8 @@ function SchemesContent() {
                 </div>
 
                 {/* 4. SEARCH BAR SECTION (v4 Advanced Filters) */}
-                <div className="mb-12 bg-white p-8 rounded-[2rem] border-2 border-gray-100 shadow-2xl">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div className="mb-12 bg-white p-6 md:p-8 rounded-[2rem] border-2 border-gray-100 shadow-2xl">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                         
                         {/* 1. Level Filter */}
                         <div className="space-y-2">
@@ -519,26 +519,28 @@ function SchemesContent() {
 
                     {/* Main Search Input */}
                     <div className="relative group">
-                        <div className="relative bg-gray-50 border-2 border-gray-100 rounded-2xl p-2 flex items-center hover:border-gray-200 transition-all">
-                            <Search className="w-6 h-6 text-gray-400 ml-4" />
-                            <input
-                                type="text"
-                                placeholder={
-                                    searchMode === 'title' ? "Search by exact or fuzzy title (e.g. Mukhyamantri)..." :
-                                    "Search by details/benefits (e.g. 12th students scholarship)..."
-                                }
-                                className="w-full bg-transparent border-none focus:ring-0 text-gray-900 placeholder-gray-400 px-4 py-3 text-lg font-medium"
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter') {
-                                        submitSearch();
+                        <div className="relative bg-gray-50 border-2 border-gray-100 rounded-2xl p-2 flex flex-col sm:flex-row items-center hover:border-gray-200 transition-all gap-2">
+                            <div className="flex items-center w-full sm:w-auto flex-1 h-full">
+                                <Search className="w-6 h-6 text-gray-400 ml-4 shrink-0" />
+                                <input
+                                    type="text"
+                                    placeholder={
+                                        searchMode === 'title' ? "Search by exact or fuzzy title..." :
+                                        "Search by details/benefits..."
                                     }
-                                }}
-                            />
+                                    className="w-full bg-transparent border-none focus:ring-0 text-gray-900 placeholder-gray-400 px-4 py-3 text-lg font-medium"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                            submitSearch();
+                                        }
+                                    }}
+                                />
+                            </div>
                             <button
                                 onClick={submitSearch}
-                                className="bg-gray-900 text-white px-10 py-4 rounded-xl font-black text-sm uppercase tracking-widest hover:bg-gray-800 transition-colors shadow-xl shadow-gray-900/20"
+                                className="w-full sm:w-auto bg-gray-900 text-white px-10 py-4 rounded-xl font-black text-sm uppercase tracking-widest hover:bg-gray-800 transition-colors shadow-xl shadow-gray-900/20"
                             >
                                 Apply Filters
                             </button>
@@ -562,7 +564,7 @@ function SchemesContent() {
                     </div>
 
                     {loading ? (
-                        <div className="grid md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {[1, 2, 3, 4].map(n => <div key={n} className="bg-white rounded-3xl h-80 animate-pulse border border-gray-100"></div>)}
                         </div>
                     ) : schemes.length === 0 ? (
@@ -571,7 +573,7 @@ function SchemesContent() {
                             <p className="text-gray-400 text-sm mt-2">Try selecting a different category or clearing your search.</p>
                         </div>
                     ) : (
-                        <div className="grid md:grid-cols-2 gap-6 mb-12">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
                             {schemes.map((scheme) => (
                                 <div key={scheme.id} className="bg-white rounded-2xl p-8 border border-gray-200 hover:border-gray-400 transition-all duration-300 flex flex-col group shadow-sm hover:shadow-md">
                                     <div className="flex justify-between items-start mb-6">

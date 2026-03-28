@@ -1,17 +1,15 @@
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { getServerUser } from "@/lib/auth-utils";
 
 export async function GET(request: Request) {
     try {
-        const { searchParams } = new URL(request.url);
-        const userId = searchParams.get("userId");
-
-        if (!userId) {
-            return NextResponse.json(
-                { message: "Missing userId parameter" },
-                { status: 400 }
-            );
+        const user = await getServerUser();
+        if (!user) {
+            return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
         }
+
+        const userId = user.id;
 
         let profile = await prisma.userProfile.findUnique({
             where: { userId },

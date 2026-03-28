@@ -94,7 +94,7 @@ export default function LoginPage() {
                         <span className="relative bg-white px-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Or Login With</span>
                     </div>
 
-                    <div className="mt-8 grid grid-cols-2 gap-4">
+                    <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <button className="flex items-center justify-center gap-2 py-3 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors font-bold text-gray-700">
                             <span className="text-xl">G</span> Google
                         </button>

@@ -39,7 +39,7 @@ export default function Home() {
               <span>AI-Powered Matching</span>
             </div>
 
-            <h1 className="text-5xl md:text-7xl font-bold tracking-tight leading-[1.1]">
+            <h1 className="text-4xl md:text-7xl font-bold tracking-tight leading-[1.1]">
               Empower Your Future <br />
               <span className="text-white bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-purple-400 to-white">With Sangam AI</span>
             </h1>
@@ -48,33 +48,33 @@ export default function Home() {
               Discover, Apply, and Track thousands of government opportunities tailored just for you. No paperwork chaos, just plain results.
             </p>
 
-            <div className="flex flex-wrap gap-4 pt-2">
-              <Link href={user ? "/schemes" : "/register"} className="px-8 py-4 bg-white text-black rounded-full font-bold text-lg hover:bg-gray-200 transition-all flex items-center gap-2 transform hover:scale-105 shadow-lg shadow-white/10">
+            <div className="flex flex-col sm:flex-row gap-4 pt-2">
+              <Link href={user ? "/schemes" : "/register"} className="px-8 py-4 bg-white text-black rounded-full font-bold text-lg hover:bg-gray-200 transition-all flex items-center justify-center sm:justify-start gap-2 transform hover:scale-105 shadow-lg shadow-white/10 w-full sm:w-auto">
                 <Zap size={20} className="fill-black" /> Get Started
               </Link>
-              <Link href="/schemes" className="px-8 py-4 bg-transparent border border-gray-600 text-white rounded-full font-bold text-lg hover:bg-white/5 hover:border-white transition-all flex items-center gap-2 hover:scale-105">
+              <Link href="/schemes" className="px-8 py-4 bg-transparent border border-gray-600 text-white rounded-full font-bold text-lg hover:bg-white/5 hover:border-white transition-all flex items-center justify-center sm:justify-start gap-2 hover:scale-105 w-full sm:w-auto">
                 <Search size={20} /> Explore Schemes
               </Link>
             </div>
 
-            <div className="flex gap-12 pt-8 border-t border-white/10 mt-16">
-              <div>
-                <div className="text-3xl font-bold text-white">850+</div>
-                <div className="text-gray-500 text-sm font-medium mt-1">Schemes Listed</div>
-              </div>
-              <div>
-                <div className="text-3xl font-bold text-white">100%</div>
-                <div className="text-gray-500 text-sm font-medium mt-1">Free</div>
-              </div>
-              <div>
-                <div className="text-3xl font-bold text-white">AI</div>
-                <div className="text-gray-500 text-sm font-medium mt-1">Powered</div>
-              </div>
+            <div className="grid grid-cols-2 gap-x-8 gap-y-6 pt-12 border-t border-white/10 mt-12 sm:flex sm:gap-12 sm:mt-16 sm:pt-8 w-full">
+                <div>
+                  <div className="text-2xl sm:text-3xl font-bold text-white leading-none">850+</div>
+                  <div className="text-gray-500 text-[10px] sm:text-sm font-medium mt-1 uppercase tracking-wider">Schemes Listed</div>
+                </div>
+                <div>
+                  <div className="text-2xl sm:text-3xl font-bold text-white leading-none">100%</div>
+                  <div className="text-gray-500 text-[10px] sm:text-sm font-medium mt-1 uppercase tracking-wider">Free</div>
+                </div>
+                <div className="col-span-2 sm:col-auto">
+                  <div className="text-2xl sm:text-3xl font-bold text-white uppercase tracking-tighter leading-none">AI-Enabled</div>
+                  <div className="text-gray-500 text-[10px] sm:text-sm font-medium mt-1 uppercase tracking-wider">Powered matching</div>
+                </div>
             </div>
           </div>
 
           {/* Right Visual - 3D Graphic */}
-          <div className="w-full md:w-1/2 relative flex justify-center md:justify-end items-center h-[500px] md:pr-12">
+          <div className="hidden md:flex w-full md:w-1/2 relative justify-center md:justify-end items-center h-[500px] md:pr-12">
             {/* 3D-like graphic using CSS/Icons */}
             <div className="relative w-full max-w-[500px] aspect-square animate-float">
 
