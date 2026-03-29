@@ -32,8 +32,12 @@ export async function POST(req: Request) {
             },
         });
 
-        // 2. Forward to FastAPI v2
-        const FASTAPI_URL = process.env.FASTAPI_URL || "http://localhost:8000";
+        // 2. Forward to FastAPI
+        const FASTAPI_URL = process.env.FASTAPI_URL;
+        if (!FASTAPI_URL) {
+            console.error("CRITICAL: FASTAPI_URL environment variable is not defined!");
+            return NextResponse.json({ error: "Backend configuration missing" }, { status: 500 });
+        }
         const fastApiResponse = await fetch(`${FASTAPI_URL}/query`, {
             method: "POST",
             headers: { 
