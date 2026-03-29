@@ -7,8 +7,8 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 const createPrismaClient = () => {
-    // ⚠️ We use a small, fast pool for Serverless (Vercel) to avoid exhausting DB connections.
-    const connectionString = `${process.env.DATABASE_URL}${process.env.DATABASE_URL?.includes('?') ? '&' : '?'}pgbouncer=true`;
+    // 🏠 Use the environment URL directly to avoid auth corruption.
+    const connectionString = process.env.DATABASE_URL;
     
     const pool = new Pool({ 
         connectionString,
