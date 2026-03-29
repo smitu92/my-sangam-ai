@@ -49,12 +49,20 @@ def handle_user_message(user_message: str, user_profile: dict, chat_history: lis
 
     
     if response_type == "OFF_TOPIC":
-        return {"answer": "I only help with Indian government schemes.", "type": "OFF_TOPIC", "schemes_found": []}
+        # Relaxed check for greetings
+        greetings = ["hi", "hello", "hey", "hola", "namaste"]
+        if any(g.lower() in user_message.lower() for g in greetings):
+            response_type = "GENERAL"
+        else:
+            return {"answer": "I only help with Indian government schemes. How can I assist you with your eligibility today?", "type": "OFF_TOPIC", "schemes_found": []}
 
     # 2. RETRIEVE
     raw_schemes = []
-    if response_type == "SCHEME":
-        raw_schemes = search_pgvector(filters["query"], filters.get("state"), filters.get("category"))
+    # 🕵️‍♂️ Logic: If it's a GENERAL query, we still want to keep the 'current' context 
+    # of schemes visible to the LLM so it can answer follow-up questions.
+    if response_type in ["SCHEME", "GENERAL"]:
+        search_query = filters.get("query") or user_message
+        raw_schemes = search_pgvector(search_query, filters.get("state"), filters.get("category"))
         if not raw_schemes and (filters.get("state") or filters.get("category")):
             raw_schemes = search_pgvector(filters["query"])
 

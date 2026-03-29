@@ -20,9 +20,9 @@ USER MESSAGE: {user_message}
 
 Rules:
 - Respond ONLY with a valid JSON object.
-- If the user mentions a specific scheme name from the history, classify as "GENERAL".
-- If the user asks for a new type of scheme, classify as "SCHEME".
-- "query": Extract main search terms (or null if GENERAL/OFF_TOPIC).
+- If the user asks for more information about a scheme mentioned in history, classify as "GENERAL".
+- If the user asks for a NEW scheme or says "Show me details of [Scheme Name]", classify as "SCHEME".
+- "query": Extract main search terms. Never return null if the user is asking about a scheme.
 - "state": Detect state from message or fallback to USER DATA.
 - "category": Detect category/caste or fallback to USER DATA.
 - "override": true if user mentions a state/category DIFFERENT from USER DATA.
