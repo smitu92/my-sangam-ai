@@ -32,6 +32,9 @@ def handle_user_message(user_message: str, user_profile: dict, chat_history: lis
         content = re.sub(r'```(?:json)?', '', raw_route)
         content = re.sub(r'```', '', content).strip()
         
+        if content.startswith("LLM "):
+            raise ValueError(f"LLM failure: {content}")
+            
         # Extract JSON using standard greedy matching from first '{' to last '}'
         start = content.find('{')
         end = content.rfind('}')
